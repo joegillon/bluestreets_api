@@ -11,10 +11,8 @@ fields = {
     'first_name': fields.String,
     'middle_name': fields.String,
     'name_suffix': fields.String,
-    'nickname': fields.String,
     'last_name_meta': fields.String,
     'first_name_meta': fields.String,
-    'nickname_meta': fields.String,
     'name': fields.String,
     'birth_year': fields.Integer,
     'gender': fields.String,
@@ -67,4 +65,5 @@ class VotersByNeighborhood(Resource):
         for block in blocks:
             rex += cmn.get_for_block(dao, 'voters', block)
         dao.close()
-        return [hlp.to_display(rec) for rec in rex]
+        rex = [hlp.to_display(rec) for rec in rex]
+        return sorted(rex, key=lambda k: k['name'])

@@ -34,6 +34,6 @@ def get_for_block(dao, tbl, block):
         elif block['odd_even'] == 'E':
             sql += "AND (house_number % 2)=0 "
 
-    sql += "ORDER BY house_number;"
+    sql += "ORDER BY last_name, first_name, middle_name;"
 
     return dao.execute(sql, vals)

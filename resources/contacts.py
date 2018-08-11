@@ -77,4 +77,5 @@ class ContactsByNeighborhood(Resource):
         for block in blocks:
             rex += cmn.get_for_block(dao, 'contacts', block)
         dao.close()
-        return [hlp.to_display(rec) for rec in rex]
+        rex = [hlp.to_display(rec) for rec in rex]
+        return sorted(rex, key=lambda k: k['name'])
