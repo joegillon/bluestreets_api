@@ -16,7 +16,7 @@ fields = {
     'name': fields.String,
     'birth_year': fields.Integer,
     'gender': fields.String,
-    'house_number': fields.String,
+    'house_number': fields.Integer,
     'pre_direction': fields.String,
     'street_name': fields.String,
     'street_type': fields.String,
