@@ -50,8 +50,7 @@ class VotersByPct(Resource):
     @marshal_with(fields)
     def get(self, pct_id):
         dao = Dao()
-        rex = cmn.get_for_precinct(dao, 'voters', pct_id)
-        return [hlp.to_display(rec) for rec in rex]
+        return cmn.get_for_precinct(dao, 'voters', pct_id)
 
 
 class VotersByNeighborhood(Resource):
@@ -65,5 +64,4 @@ class VotersByNeighborhood(Resource):
         for block in blocks:
             rex += cmn.get_for_block(dao, 'voters', block)
         dao.close()
-        rex = [hlp.to_display(rec) for rec in rex]
-        return sorted(rex, key=lambda k: k['name'])
+        return rex

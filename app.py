@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_restful import Api
 from resources.contacts import Contacts, ContactsByPct, \
     ContactsByNeighborhood, con_api
@@ -22,6 +22,13 @@ api.add_resource(VotersByNeighborhood, '/vtr_api/blocks')
 
 api.add_resource(Precincts, '/pct_api/all')
 api.add_resource(Precinct, '/pct_api/pct/<int:pct_id>')
+
+@app.route('/testpost', methods=['POST'])
+def testpost():
+    frm = request.form
+    pass
+
+
 
 if __name__ == '__main__':
     import os
