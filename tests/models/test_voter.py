@@ -8,7 +8,7 @@ class TestVoter(unittest.TestCase):
     def setUp(self):
         dbfile = 'c:/bench/bluestreets_api/data/26161.db'
         self.dao = Dao(db_file=dbfile, stateful=True)
-        self.voter_ids = get_voters(self.dao)
+        self.voter_ids = sorted(get_voters(self.dao))
 
     def tearDown(self):
         self.dao.close()
@@ -26,15 +26,20 @@ class TestVoter(unittest.TestCase):
         self.assertEqual([x for x in range(100, 111)], batch)
 
     def test_get_hx(self):
-        dbfile = 'c:/bench/bluestreets_api/data/26161.db'
-        dao = Dao(db_file=dbfile, stateful=True)
-        ids = sorted(get_voters(dao))
-        self.assertEqual(34085, len(ids))
-        hx = vtr.get_hx(dao, ids)
-        dao.close()
+        self.assertEqual(34085, len(self.voter_ids))
+        hx = vtr.get_hx(self.dao, self.voter_ids)
         self.assertEqual(305518, len(hx))
 
     def test_get_voters_for_precinct(self):
+        voters = vtr.get_voters_for_precinct(self.dao, 10)
+        self.assertEqual(2143, len(voters))
+
+
+def get_voters(dao):
+    sql = ("SELECT DISTINCT voter_id FROM voter_history "
+          "WHERE election_code='31000050' AND jurisdiction_code='03000'")
+    rex = dao.execute(sql)
+    return [rec['voter_id'] for rec in rex]
 
 
 if __name__ == '__main__':
