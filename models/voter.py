@@ -25,3 +25,14 @@ def get_voters_for_precinct(dao, pct_id):
            "WHERE precinct_id=? ")
     rex = dao.execute(sql, (pct_id,))
     return [rec['voter_id'] for rec in rex] if rex else []
+
+
+def get_elections(dao):
+    sql = "SELECT * FROM elections ORDER BY date DESC"
+    return dao.execute(sql)
+
+
+def get_elections_after(dao, date):
+    sql = "SELECT code, date, description FROM elections WHERE date > ? ORDER BY date DESC"
+    rex = dao.execute(sql, (date,))
+    return rex

@@ -128,3 +128,17 @@ def get_hx(dao, voter_ids):
     for k in hx:
         hx[k] = ','.join(hx[k])
     return hx
+
+
+class Election(Resource):
+    @staticmethod
+    def get():
+        dao = Dao()
+        return vtr.get_elections(dao)
+
+
+class ElectionsAfter(Resource):
+    @staticmethod
+    def get(date):
+        dao = Dao()
+        return vtr.get_elections_after(dao, date)
