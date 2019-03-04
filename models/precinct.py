@@ -1,10 +1,19 @@
-def get_all(dao):
-    sql = ("SELECT * FROM precincts "
-           "ORDER BY jurisdiction_name, ward, precinct")
-    return dao.execute(sql)
+from dao.setup import db
 
 
-def get_precinct(dao, pct_id):
-    sql = ("SELECT * FROM precincts "
-           "WHERE id=?")
-    return dao.execute(sql, (pct_id,))
+class Precinct(db.Model):
+    __tablename__ = 'precincts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    county_code = db.Column(db.Text, nullable=False)
+    county_name = db.Column(db.Text, nullable=False)
+    jurisdiction_code = db.Column(db.Text, nullable=False)
+    jurisdiction_name = db.Column(db.Text, nullable=False)
+    ward = db.Column(db.Text, nullable=False)
+    precinct = db.Column(db.Text, nullable=False)
+    state_house = db.Column(db.Text, nullable=False)
+    state_senate = db.Column(db.Text, nullable=False)
+    congress = db.Column(db.Text, nullable=False)
+    county_commissioner = db.Column(db.Text, nullable=False)
+    school_precinct = db.Column(db.Text, nullable=False)
+

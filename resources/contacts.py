@@ -1,8 +1,6 @@
 from flask_restful import marshal_with, reqparse, fields, Resource
-from flask import json, Blueprint
-from dao.dao import Dao
-import models.common as cmn
-import resources.helpers as hlp
+from flask import Blueprint
+from models.contact import Contact
 
 fields = {
     'id': fields.Integer,
@@ -34,7 +32,9 @@ fields = {
     'voter_id': fields.Integer,
     'reg_date': fields.String,
     'active': fields.Boolean,
-    'comment': fields.String
+    'comment': fields.String,
+    'created_at': fields.DateTime,
+    'updated_at': fields.DateTime
 }
 
 con_api = Blueprint('con_api', __name__, url_prefix='/con_api')
@@ -52,30 +52,16 @@ class Contacts(Resource):
 
     @marshal_with(fields)
     def get(self):
-        dao = Dao()
-        rex = cmn.get_all(dao, 'contacts')
-        return [hlp.to_display(rec) for rec in rex]
+        contacts = Contact.query.order_by(
+            Contact.last_name,
+            Contact.first_name,
+            Contact.middle_name
+        ).all()
+        return contacts
 
 
-class ContactsByPct(Resource):
-
-    @marshal_with(fields)
-    def get(self, pct_id):
-        dao = Dao()
-        rex = cmn.get_for_precinct(dao, 'contacts', pct_id)
-        return [hlp.to_display(rec) for rec in rex]
-
-
-class ContactsByNeighborhood(Resource):
+class ContactsSince(Resource):
 
     @marshal_with(fields)
-    def post(self):
-        args = parser.parse_args()
-        blocks = json.loads(args.blocks)
-        dao = Dao(stateful=True)
-        rex = []
-        for block in blocks:
-            rex += cmn.get_for_block(dao, 'contacts', block)
-        dao.close()
-        rex = [hlp.to_display(rec) for rec in rex]
-        return sorted(rex, key=lambda k: k['name'])
+    def get(self):
+        pass

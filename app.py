@@ -1,41 +1,50 @@
-from flask import Flask, request
-from flask_restful import Api
-from resources.contacts import Contacts, ContactsByPct, \
-    ContactsByNeighborhood, con_api
-from resources.precincts import Precinct, Precincts, pct_api
-from resources.voters import *
+def create_app():
+    from dao.setup import db
+    from resources.contacts import con_api
+    from resources.precincts import pct_api
+    from resources.groups import grp_api
+    from resources.memberships import mem_api
 
-app = Flask(__name__)
-api = Api(app)
+    the_app = Flask(__name__)
+    the_app.config['DEBUG'] = True
+    the_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data/26161.db'
+    the_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-app.register_blueprint(con_api)
-app.register_blueprint(pct_api)
-app.register_blueprint(vtr_api)
+    db.init_app(the_app)
 
-api.add_resource(Contacts, '/con_api/all')
-api.add_resource(ContactsByPct, '/con_api/pct/<int:pct_id>')
-api.add_resource(ContactsByNeighborhood, '/con_api/blocks')
+    the_app.register_blueprint(con_api)
+    the_app.register_blueprint(pct_api)
+    the_app.register_blueprint(grp_api)
+    the_app.register_blueprint(mem_api)
 
-api.add_resource(VotersByPct, '/vtr_api/pct/<int:pct_id>')
-api.add_resource(VotersByNeighborhood, '/vtr_api/blocks')
-api.add_resource(HistoryByVoter, '/vtr_api/hx_voters')
-api.add_resource(HistoryByPct, '/vtr_api/hx_pcts')
-api.add_resource(Election, '/vtr_api/elections')
-api.add_resource(ElectionsAfter, '/vtr_api/elections_after/<string:date>')
-
-api.add_resource(Precincts, '/pct_api/all')
-api.add_resource(Precinct, '/pct_api/pct/<int:pct_id>')
+    return the_app
 
 
-@app.route('/testpost', methods=['POST'])
-def testpost():
-    frm = request.form
-    pass
+def create_api(the_app):
+    from flask_restful import Api
+    from resources.contacts import Contacts, ContactsSince
+    from resources.precincts import Precincts
+    from resources.groups import Groups
+    from resources.memberships import Memberships
+
+    the_api = Api(the_app)
+
+    the_api.add_resource(Contacts, '/con_api/all')
+    the_api.add_resource(ContactsSince, '/con_api/since/<int:pct_id>')
+    the_api.add_resource(Precincts, '/pct_api/all')
+    the_api.add_resource(Groups, '/grp_api/all')
+    the_api.add_resource(Memberships, '/mem_api/all')
+
+    return the_api
 
 
 if __name__ == '__main__':
     import os
+    from flask import Flask
 
     app_path = os.path.dirname(__file__)
-    app.config['DB_PATH'] = os.path.join(app_path, 'data\\26161.db')
+
+    app = create_app()
+    api = create_api(app)
+
     app.run(debug=True)

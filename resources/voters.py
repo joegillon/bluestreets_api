@@ -3,6 +3,7 @@ from flask import json, Blueprint
 from dao.dao import Dao
 import models.common as cmn
 import models.voter as vtr
+import models.turf as trf
 
 vtr_api = Blueprint('vtr_api', __name__, url_prefix='/vtr_api')
 
@@ -56,6 +57,12 @@ hx_vtr_parser.add_argument(
     location='form',
     required=True
 )
+hx_vtr_parser.add_argument(
+    'after',
+    dest='after',
+    location='form',
+    required=False
+)
 
 hx_pct_parser = reqparse.RequestParser()
 hx_pct_parser.add_argument(
@@ -68,24 +75,39 @@ hx_pct_parser.add_argument(
 
 class VotersByPct(Resource):
 
-    @marshal_with(vtr_flds)
-    def get(self, pct_id):
-        dao = Dao()
-        return cmn.get_for_precinct(dao, 'voters', pct_id)
+    @staticmethod
+    def get(pct_id):
+        dao = Dao(stateful=True)
+        voters = cmn.get_for_precinct(dao, 'voters', pct_id)
+        hx = (get_hx(dao, [rec['voter_id'] for rec in voters]))
+        dao.close()
+        for voter in voters:
+            vid = voter['voter_id']
+            voter['hx'] = {}
+            if vid in hx:
+                voter['hx'] = hx[vid]
+        return voters
 
 
 class VotersByNeighborhood(Resource):
 
-    @marshal_with(vtr_flds)
-    def post(self):
+    @staticmethod
+    def post():
         args = parser.parse_args()
         blocks = json.loads(args.blocks)
         dao = Dao(stateful=True)
-        rex = []
+        rex = cmn.get_for_precinct(dao, 'voters', blocks[0]['precinct_id'])
+        voters = []
         for block in blocks:
-            rex += cmn.get_for_block(dao, 'voters', block)
+            voters += [rec for rec in rex if trf.is_in_turf(rec, block)]
+        hx = (get_hx(dao, [voter['voter_id'] for voter in voters]))
         dao.close()
-        return rex
+        for voter in voters:
+            vid = voter['voter_id']
+            voter['hx'] = {}
+            if vid in hx:
+                voter['hx'] = hx[vid]
+        return voters
 
 
 class HistoryByVoter(Resource):
@@ -95,7 +117,7 @@ class HistoryByVoter(Resource):
         args = hx_vtr_parser.parse_args()
         voter_ids = json.loads(args.voter_ids)
         dao = Dao(stateful=True)
-        hx = get_hx(dao, voter_ids)
+        hx = get_hx(dao, voter_ids, args.after)
         dao.close()
         return hx
 
@@ -115,16 +137,13 @@ class HistoryByPct(Resource):
         return hx
 
 
-def get_hx(dao, voter_ids):
-    data = vtr.get_hx(dao, voter_ids)
+def get_hx(dao, voter_ids, after=None):
+    data = vtr.get_hx(dao, voter_ids, after)
     hx = {}
     for rec in data:
         if rec['voter_id'] not in hx:
             hx[rec['voter_id']] = []
-        ec = rec['election_code']
-        if rec['ballot']:
-            ec += rec['ballot']
-        hx[rec['voter_id']].append(ec)
+        hx[rec['voter_id']].append(rec['election'].replace('-', ''))
     for k in hx:
         hx[k] = ','.join(hx[k])
     return hx
@@ -142,3 +161,10 @@ class ElectionsAfter(Resource):
     def get(date):
         dao = Dao()
         return vtr.get_elections_after(dao, date)
+
+
+class LatestElection(Resource):
+    @staticmethod
+    def get():
+        dao = Dao()
+        return vtr.get_latest_election(dao)

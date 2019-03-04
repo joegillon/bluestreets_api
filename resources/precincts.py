@@ -1,7 +1,6 @@
 from flask_restful import marshal_with, fields, Resource
 from flask import Blueprint
-from dao.dao import Dao
-import models.precinct as precinct
+from models.precinct import Precinct
 
 pct_api = Blueprint('pct_api', __name__, url_prefix='/pct_api')
 
@@ -26,13 +25,8 @@ class Precincts(Resource):
 
     @marshal_with(fields)
     def get(self):
-        dao = Dao()
-        return precinct.get_all(dao)
-
-
-class Precinct(Resource):
-
-    @marshal_with(fields)
-    def get(self, pct_id):
-        dao = Dao()
-        return precinct.get_precinct(dao, pct_id)
+        return Precinct.query.order_by(
+            Precinct.jurisdiction_name,
+            Precinct.ward,
+            Precinct.precinct
+        ).all()

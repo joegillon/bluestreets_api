@@ -31,7 +31,20 @@ class TestVoter(unittest.TestCase):
         self.assertEqual(305518, len(hx))
 
     def test_get_voters_for_precinct(self):
-        voters = vtr.get_voters_for_precinct(self.dao, 10)
+        # voters = vtr.get_voters_for_precinct(self.dao, 10)
+        from models.common import get_for_precinct
+        import models.turf as trf
+
+        block = {
+            'precinct_id': 10,
+            'street_name': 'ARROWWOOD',
+            'street_type': 'TRL',
+            'low_addr': 2300,
+            'high_addr': 2399,
+            'odd_even': 'O'
+        }
+        rex = get_for_precinct(self.dao, 'voters', 10)
+        voters = [rec for rec in rex if trf.is_in_turf(rec, block)]
         self.assertEqual(2143, len(voters))
 
 
