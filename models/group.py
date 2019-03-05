@@ -1,4 +1,4 @@
-from dao.setup import db
+from config.setup import db
 from models.ts_mixin import TimestampMixin
 
 
