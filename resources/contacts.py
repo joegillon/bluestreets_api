@@ -1,6 +1,8 @@
 from flask_restful import marshal_with, reqparse, fields, Resource
+from flask_praetorian import auth_required, roles_accepted
 from flask import Blueprint
 from models.contact import Contact
+from datetime import datetime
 
 fields = {
     'id': fields.Integer,
@@ -39,17 +41,11 @@ fields = {
 
 con_api = Blueprint('con_api', __name__, url_prefix='/con_api')
 
-parser = reqparse.RequestParser()
-parser.add_argument(
-    'blocks',
-    dest='blocks',
-    location='form',
-    required=True
-)
-
 
 class Contacts(Resource):
 
+    @auth_required
+    @roles_accepted('memapp')
     @marshal_with(fields)
     def get(self):
         contacts = Contact.query.order_by(
@@ -62,6 +58,15 @@ class Contacts(Resource):
 
 class ContactsSince(Resource):
 
+    @auth_required
+    @roles_accepted('memapp')
     @marshal_with(fields)
-    def get(self):
-        pass
+    def get(self, datestr):
+        since = str(datetime.strptime(datestr, '%Y%m%d%H%M%S'))
+        contacts = Contact.query.order_by(
+            Contact.last_name,
+            Contact.first_name,
+            Contact.middle_name
+        ).filter((Contact.created_at >= since) |
+                 (Contact.updated_at >= since)).all()
+        return contacts

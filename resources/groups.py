@@ -1,4 +1,5 @@
-from flask_restful import marshal_with, reqparse, fields, Resource
+from flask_restful import marshal_with, fields, Resource
+from flask_praetorian import auth_required, roles_accepted
 from flask import Blueprint
 from models.group import Group
 
@@ -16,6 +17,8 @@ grp_api = Blueprint('grp_api', __name__, url_prefix='/grp_api')
 
 class Groups(Resource):
 
+    @auth_required
+    @roles_accepted('memapp')
     @marshal_with(fields)
     def get(self):
         groups = Group.query.order_by(

@@ -1,5 +1,5 @@
 from datetime import datetime
-from dao.setup import db
+from config.extensions import db
 
 
 class TimestampMixin(object):

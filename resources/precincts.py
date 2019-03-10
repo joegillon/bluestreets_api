@@ -1,4 +1,5 @@
 from flask_restful import marshal_with, fields, Resource
+from flask_praetorian import auth_required, roles_accepted
 from flask import Blueprint
 from models.precinct import Precinct
 
@@ -23,6 +24,8 @@ fields = {
 
 class Precincts(Resource):
 
+    @auth_required
+    @roles_accepted('memapp')
     @marshal_with(fields)
     def get(self):
         return Precinct.query.order_by(

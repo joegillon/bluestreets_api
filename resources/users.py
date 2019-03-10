@@ -1,6 +1,7 @@
 from flask_restful import Resource, reqparse
 from flask import Blueprint, jsonify
-from config.setup import guard, blacklist
+from flask_praetorian import auth_required, roles_accepted
+from config.extensions import guard, blacklist
 from models.user import User
 
 usr_api = Blueprint('usr_api', __name__, url_prefix='/usr_api')
@@ -18,12 +19,18 @@ parser.add_argument(
     required=True
 )
 
+parser.add_argument('rolenames')
+
 
 class UserRegistration(Resource):
+
+    @auth_required
+    @roles_accepted('admin')
     def post(self):
         data = parser.parse_args()
         username = data['username']
         password = data['password']
+        rolenames = data['rolenames']
 
         if User.lookup(username):
             return {
@@ -33,6 +40,7 @@ class UserRegistration(Resource):
         new_user = User()
         new_user.username = username
         new_user.password = guard.encrypt_password(password)
+        new_user.rolenames = rolenames
         try:
             new_user.save()
             return {
@@ -54,6 +62,8 @@ class Login(Resource):
 
 
 class Refresh(Resource):
+
+    @auth_required
     def get(self):
         old_token = guard.read_token_from_header()
         new_token = guard.refresh_jwt_token(old_token)
@@ -68,3 +78,18 @@ class Blacklist(Resource):
         data = guard.extract_jwt_token(token)
         blacklist.add(data['jti'])
         return jsonify(message='token blacklisted')
+
+
+class ChangePassword(Resource):
+
+    @auth_required
+    def post(self):
+        pass
+
+
+class ChangeRoles(Resource):
+
+    @auth_required
+    @roles_accepted('admin')
+    def post(self):
+        pass

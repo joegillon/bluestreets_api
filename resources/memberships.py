@@ -1,4 +1,5 @@
 from flask_restful import marshal_with, fields, Resource
+from flask_praetorian import auth_required, roles_accepted
 from flask import Blueprint
 from models.membership import Membership
 
@@ -17,6 +18,8 @@ mem_api = Blueprint('mem_api', __name__, url_prefix='/mem_api')
 
 class Memberships(Resource):
 
+    @auth_required
+    @roles_accepted('memapp')
     @marshal_with(fields)
     def get(self):
         memberships = Membership.query.all()

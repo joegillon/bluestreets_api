@@ -1,4 +1,4 @@
-from config.setup import db
+from config.extensions import db
 
 
 class Precinct(db.Model):

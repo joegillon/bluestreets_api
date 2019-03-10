@@ -1,4 +1,4 @@
-from config.setup import db
+from config.extensions import db
 from models.ts_mixin import TimestampMixin
 
 
@@ -18,6 +18,10 @@ class User(TimestampMixin, db.Model):
             return self.roles.split(',')
         except Exception:
             return []
+
+    @rolenames.setter
+    def rolenames(self, roles):
+        self.roles = roles
 
     @classmethod
     def lookup(cls, username):
