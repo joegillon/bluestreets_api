@@ -1,4 +1,4 @@
-from flask_restful import marshal_with, reqparse, fields, Resource
+from flask_restful import marshal_with, fields, Resource
 from flask_praetorian import auth_required, roles_accepted
 from flask import Blueprint
 from models.contact import Contact

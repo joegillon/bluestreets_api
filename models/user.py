@@ -14,6 +14,7 @@ class User(TimestampMixin, db.Model):
 
     @property
     def rolenames(self):
+        # noinspection PyBroadException
         try:
             return self.roles.split(',')
         except Exception:
@@ -32,8 +33,8 @@ class User(TimestampMixin, db.Model):
         db.session.commit()
 
     @classmethod
-    def identify(cls, id):
-        return cls.query.get(id)
+    def identify(cls, user_id):
+        return cls.query.get(user_id)
 
     @property
     def identity(self):

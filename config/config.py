@@ -17,7 +17,6 @@ class ProductionConfig(Config):
     DEBUG = False
     TESTING = False
     ENV = 'prod'
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///data/26161.db'
     SECRET_KEY = '792842bc-c4df-4de1-9177-d5207bd9faa6'
     JWT_ACCESS_LIFESPAN = {'hours': 24}
     JWT_REFRESH_LIFESPAN = {'days': 30}
@@ -27,7 +26,6 @@ class DevelopmentConfig(Config):
     DEBUG = True
     TESTING = False
     ENV = 'dev'
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///data/26161.db'
     SECRET_KEY = 'a9eec0e0-23b7-4788-9a92-318347b9a39f'
     JWT_ACCESS_LIFESPAN = {'hours': 24}
     JWT_REFRESH_LIFESPAN = {'days': 30}
@@ -51,7 +49,9 @@ def configure_app(app):
     from models.user import User
 
     config_name = os.getenv('FLASK_CONFIGURATION', 'default')
+    fips = os.getenv('BLUESTREETS_FIPS', '')
     app.config.from_object(config[config_name])
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data/%s.db' % (fips,)
     app.config.from_pyfile('config.cfg', silent=True)
 
     app_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
