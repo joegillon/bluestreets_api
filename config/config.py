@@ -50,15 +50,17 @@ def configure_app(app):
 
     config_name = os.getenv('FLASK_CONFIGURATION', 'default')
     fips = os.getenv('BLUESTREETS_FIPS', '')
+    fips = '26161'
     app.config.from_object(config[config_name])
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data/%s.db' % (fips,)
-    app.config.from_pyfile('config.cfg', silent=True)
+    print(app.config['SQLALCHEMY_DATABASE_URI'])
+    # app.config.from_pyfile('config.cfg', silent=True)
 
-    app_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    handler = logging.FileHandler('%s/bluestreets.log' % (app_path,))
-    handler.setLevel(app.config['LOGGING_LEVEL'])
-    handler.setFormatter(logging.Formatter(app.config['LOGGING_FORMAT']))
-    app.logger.addHandler(handler)
+    # app_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    # handler = logging.FileHandler('%s/bluestreets.log' % (app_path,))
+    # handler.setLevel(app.config['LOGGING_LEVEL'])
+    # handler.setFormatter(logging.Formatter(app.config['LOGGING_FORMAT']))
+    # app.logger.addHandler(handler)
 
     db.init_app(app)
     guard.init_app(app, User, is_blacklisted=is_blacklisted)
