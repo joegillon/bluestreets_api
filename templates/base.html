@@ -1,0 +1,69 @@
+{% block doc %}
+<!DOCTYPE html>
+<html{% block html_attribs %}{% endblock html_attribs %}>
+{% block html %}
+  <head>
+    {% block head %}
+    <title>{% block title %}{{title|default}}{% endblock title %}</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}" />
+
+    {% block metas %}
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% endblock metas %}
+
+    {% block styles %}
+      <link rel="stylesheet" title="Forest" href="{{ url_for('static', filename='css/forest.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Eggplant" href="{{ url_for('static', filename='css/eggplant.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Sandy" href="{{ url_for('static', filename='css/sandy.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Saints" href="{{ url_for('static', filename='css/saints.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Tan" href="{{ url_for('static', filename='css/tan.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Tangerine" href="{{ url_for('static', filename='css/tangerine.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Aircompact" href="{{ url_for('static', filename='css/aircompact.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Clouds" href="{{ url_for('static', filename='css/clouds.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Compact" href="{{ url_for('static', filename='css/compact.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Flat" href="{{ url_for('static', filename='css/flat.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Light" href="{{ url_for('static', filename='css/light.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Metro" href="{{ url_for('static', filename='css/metro.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Antique" href="{{ url_for('static', filename='css/antique.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Monkey" href="{{ url_for('static', filename='css/monkey.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="QED" href="{{ url_for('static', filename='css/qed.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Flamingo" href="{{ url_for('static', filename='css/flamingo.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Pinko" href="{{ url_for('static', filename='css/pinko.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Brownie" href="{{ url_for('static', filename='css/brownie.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Mauve" href="{{ url_for('static', filename='css/mauve.css') }}" type="text/css" charset="utf-8">
+      <link rel="alternate stylesheet" title="Dusty" href="{{ url_for('static', filename='css/dusty.css') }}" type="text/css" charset="utf-8">
+      <link rel="stylesheet" title="bluestreets" href="{{ url_for('static', filename='css/bluestreets.css') }}" type="text/css" charset="utf-8">
+  {% endblock styles %}
+
+      {{ JSGlue.include() }}
+
+    {% endblock head %}
+  </head>
+
+  <body{% block body_attribs %} onload="set_skin_from_storage()" {% endblock body_attribs %}>
+    {% block body %}
+
+    {% block navbar %}
+    {% endblock navbar %}
+
+    {% block content %}
+    {% endblock content %}
+
+    {% block scripts %}
+      <script src="{{ url_for('static', filename='js/lib/webix.js') }}"></script>
+      <script src="{{ url_for('static', filename='js/lib/fdb-core.min.js') }}"></script>
+      <script src="{{ url_for('static', filename="js/chameleon.js") }}"></script>
+      <script src="{{ url_for('static', filename='js/ajax_dao.js') }}"></script>
+      <script src="{{ url_for('static', filename='js/helpers.js') }}"></script>
+     <script>
+        var fdb = new ForerunnerDB();
+        var db = fdb.db("bluestreets");
+      </script>
+    {% endblock scripts %}
+
+    {% endblock body %}
+  </body>
+{% endblock html %}
+</html>
+{% endblock doc %}

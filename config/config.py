@@ -40,7 +40,7 @@ config = {
 
 def configure_app(app):
     import os
-    from config.extensions import db, guard, cors, is_blacklisted
+    from config.extensions import db, guard, cors, is_blacklisted, JSGlue
     from resources.contacts import con_api
     from resources.precincts import pct_api
     from resources.groups import grp_api
@@ -65,6 +65,7 @@ def configure_app(app):
     db.init_app(app)
     guard.init_app(app, User, is_blacklisted=is_blacklisted)
     cors.init_app(app)
+    jsglue = JSGlue(app)
 
     app.register_blueprint(con_api)
     app.register_blueprint(pct_api)
@@ -91,3 +92,15 @@ def configure_api(api):
     api.add_resource(Login, '/usr_api/login')
     api.add_resource(Refresh, '/usr_api/refresh')
     api.add_resource(Blacklist, '/usr_api/blacklist')
+
+
+def configure_ui(app):
+    from views.contacts import con
+    from views.groups import grp
+    from views.memberships import mem
+    # from views.users import usr
+
+    app.register_blueprint(con)
+    app.register_blueprint(grp)
+    app.register_blueprint(mem)
+    # app.register_blueprint(usr)
