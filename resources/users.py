@@ -25,7 +25,7 @@ parser.add_argument('rolenames')
 class UserRegistration(Resource):
 
     @auth_required
-    @roles_accepted('admin')
+    @roles_accepted('god', 'admin')
     def post(self):
         data = parser.parse_args()
         username = data['username']
