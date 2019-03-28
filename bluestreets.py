@@ -1,10 +1,13 @@
 #!/usr/bin/python3.6
 
+import os
 from flask import Flask
 from flask_restful import Api
 from config.config import configure_app, configure_api, configure_ui
 
 app = Flask(__name__)
+
+app_path = os.path.dirname(__file__)
 
 configure_app(app)
 

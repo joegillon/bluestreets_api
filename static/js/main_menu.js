@@ -29,6 +29,8 @@ var menu_data = [
     value: "Contacts",
     submenu: [
       {id: "con_import", value: "Import Spreadsheet"},
+      {id: "con_dups", value: "Clean Duplicates"},
+      {id: "con_pcts", value: "Assign Precincts"},
       {id: "con_entry", value: "Direct Entry"},
       {id: "con_export", value: "Export List"},
       {id: "con_crewboard", value: "Battle Stations"}
@@ -38,18 +40,6 @@ var menu_data = [
     id: "groups",
     icon: "sitemap",
     value: "Groups"
-  },
-  {
-    id: "cleaning",
-    icon: "database",
-    value: "Data Cleaning",
-    submenu: [
-      {id: "con_email_dups", value: "Email Duplicates"},
-      {id: "con_phone_dups", value: "Phone Duplicates"},
-      {id: "con_name_addr_dups", value: "Name + Address Duplicates"},
-      {id: "con_name_dups", value: "Name Duplicates"},
-      {id: "synchronize", value: "Sync with Voters"}
-    ]
   },
   {
     id: "usermgt",
@@ -114,6 +104,16 @@ var mainMenu = {
         window.location.href = Flask.url_for("con.csv_import");
         return;
       }
+      if (id == "con_dups") {
+        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+        window.location.href = Flask.url_for("con.duplicates");
+        return;
+      }
+      if (id == "con_pcts") {
+        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+        window.location.href = Flask.url_for("con.precincts");
+        return;
+      }
       if (id == "con_entry") {
         //noinspection JSUnresolvedVariable,JSUnresolvedFunction
         window.location.href = Flask.url_for("con.entry");
@@ -127,31 +127,6 @@ var mainMenu = {
       if (id == "con_crewboard") {
         //noinspection JSUnresolvedVariable,JSUnresolvedFunction
         window.location.href = Flask.url_for("con.crewboard");
-        return;
-      }
-      if (id == "con_email_dups") {
-        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-        window.location.href = Flask.url_for("con.email_duplicates");
-        return;
-      }
-      if (id == "con_phone_dups") {
-        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-        window.location.href = Flask.url_for("con.phone_duplicates");
-        return;
-      }
-      if (id == "con_name_addr_dups") {
-        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-        window.location.href = Flask.url_for("con.name_addr_duplicates");
-        return;
-      }
-      if (id == "con_name_dups") {
-        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-        window.location.href = Flask.url_for("con.name_duplicates");
-        return;
-      }
-      if (id == "synchronize") {
-        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-        window.location.href = Flask.url_for("con.synchronize");
         return;
       }
       if (id == "groups") {

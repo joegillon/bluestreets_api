@@ -9,6 +9,7 @@ var contactsCollection;
 var groupsCollection;
 var membershipsCollection;
 var streetsCollection;
+var jurisdictionCollection;
 var zipcodeOptions;
 var cityOptions;
 

@@ -84,3 +84,15 @@ class MatchLib(object):
                 D[v] = []
             D[v].append(k)
         return D
+
+
+def get_suspects(target, candidates, match_fld, threshold):
+    d = {}
+    for c in candidates:
+        if c[match_fld] not in d:
+            d[c[match_fld]] = []
+        d[c[match_fld]].append(c['id'])
+    m = process.extract(target, set([t[match_fld] for t in candidates]))
+    matches = [match for match in m if match[1] >= threshold]
+    l = [d[match[0]] for match in matches]
+    return [item for sublist in l for item in sublist]

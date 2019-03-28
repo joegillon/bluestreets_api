@@ -1,0 +1,37 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+  <div id="content_container"></div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+
+  <script>
+    var isContacts = true;
+  </script>
+
+  <script src="{{ url_for('static', filename='js/ajax_dao.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/csv/dropsite_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/csv/fields_popup.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/csv/grid_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/csv/import_panel.js') }}"></script>
+
+  <script type="text/javascript" charset="utf-8">
+
+    webix.ready(function() {
+
+      webix.ui(csvFldsPopup);
+
+      webix.ui({
+        container: "content_container",
+        type: "space",
+        rows: [csvImportPanel]
+      });
+
+      csvImportPanelCtlr.init();
+      csvFldsPopupCtlr.init();
+   });
+
+  </script>
+{% endblock %}

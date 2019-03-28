@@ -1,6 +1,7 @@
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from config.extensions import db
 from models.ts_mixin import TimestampMixin
+from utils.match import MatchLib
 
 
 class Contact(TimestampMixin, db.Model):
@@ -18,6 +19,7 @@ class Contact(TimestampMixin, db.Model):
     email = db.Column(db.Text)
     phone1 = db.Column(db.Text)
     phone2 = db.Column(db.Text)
+    email_metaphone = db.Column(db.Text)
     house_number = db.Column(db.Integer)
     pre_direction = db.Column(db.Text)
     street_name = db.Column(db.Text)
@@ -32,6 +34,14 @@ class Contact(TimestampMixin, db.Model):
     reg_date = db.Column(db.Text)
     active = db.Column(db.Boolean)
     comment = db.Column(db.Text)
+
+    def __init__(self, d=None):
+        if d:
+            self.last = d['last'].upper()
+            self.name_metaphone = MatchLib.get_single(self.last)
+            self.first = d['first'].upper()
+            self.email = d['email']
+            self.email_metaphone = MatchLib.get_single(self.email)
 
     def __str__(self):
         return str(self.person_name)
@@ -51,15 +61,6 @@ class Contact(TimestampMixin, db.Model):
         return {
             'id': self.id,
             'name': self.person_name.serialize(),
-            # 'name': {
-            #     'last': self.last,
-            #     'first': self.first,
-            #     'middle': self.middle,
-            #     'suffix': self.suffix,
-            #     'nickname': self.nickname,
-            #     'name_metaphone': self.name_metaphone,
-            #     'display': str(self.person_name)
-            # },
             'address': {
                 'house_number': self.house_number,
                 'pre_direction': self.pre_direction,
@@ -75,6 +76,7 @@ class Contact(TimestampMixin, db.Model):
                 'email': self.email,
                 'phone1': self.phone1,
                 'phone2': self.phone2,
+                'email_metaphone': self.email_metaphone
             },
             'voter_info': {
                 'voter_id': self.voter_id,

@@ -17,6 +17,7 @@ class Street(db.Model):
     suf_direction = db.Column(db.Text)
     ext_low = db.Column(db.Text)
     ext_high = db.Column(db.Text)
+    city = db.Column(db.Text)
     zipcode = db.Column(db.Text)
     county_code = db.Column(db.Text)
     jurisdiction_code = db.Column(db.Text)
@@ -30,6 +31,7 @@ class Street(db.Model):
     county_commissioner = db.Column(db.Text)
     village_precinct = db.Column(db.Text)
     school_precinct = db.Column(db.Text)
+    precinct_id = db.Column(db.ForeignKey('precincts.id'))
 
     def __str__(self):
         s = ''
