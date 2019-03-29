@@ -113,9 +113,9 @@ def duplicates():
             for row in rdr:
                 ids = list(map(int, row))
                 rex = Contact.query.filter(Contact.id.in_(ids)).all()
-                contacts = [serialize_dup(rec) for rec in rex]
-                dup = {ids[0]: contacts}
-                dups.append(dup)
+                contacts = {rec.id: serialize_dup(rec) for rec in rex}
+                # dup = {ids[0]: contacts}
+                dups.append(contacts)
         csvfile.close()
 
         if not dups:

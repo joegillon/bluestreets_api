@@ -46,6 +46,19 @@ var conDupsGridCtlr = {
     // These events won't work properly unless they are here. Ugh.
     this.grid.attachEvent("onBeforeDrag", function(context, ev) {
       var sourceInfo = this.locate(ev);
+      if (['id', 'voter_id', 'precinct_id'].indexOf(sourceInfo.column) >= 0) {
+        var hdrText = $$("conDupsGrid").getColumnConfig(sourceInfo.column).header[0].text;
+        webix.message({type: "error", text: "Can't drag " + hdrText + "!"});
+        return false;
+      }
+      if (['name', 'address', 'zipcode', 'birth_year', 'gender'].indexOf(sourceInfo.column) >= 0) {
+        var voter_id = $$("conDupsGrid").getText(sourceInfo.row, "voter_id");
+        if (voter_id != "") {
+          var hdrText = $$("conDupsGrid").getColumnConfig(sourceInfo.column).header[0].text;
+          webix.message({type: "error", text: "Can't drag " + hdrText + " of voter record!"});
+          return false;
+        }
+      }
       this.sourceColumn = sourceInfo.column;
       context.value = context.from.getItem(sourceInfo.row)[sourceInfo.column];
       context.html = "<div style='padding: 8px;'>" +
@@ -69,14 +82,22 @@ var conDupsGridCtlr = {
     });
 
     this.grid.attachEvent("onAfterDrop", function(context) {
+      var targetItem = $$("conDupsGrid").getItem(context.target.row);
       if (context.target.column == "address") {
         var sourceItem = $$("conDupsGrid").getItem(context.source);
-        var targetItem = $$("conDupsGrid").getItem(context.target.row);
-        targetItem.city = sourceItem.city;
+        //targetItem.city = sourceItem.city;
         targetItem.zipcode = sourceItem.zipcode;
         $$("conDupsGrid").updateItem(context.target.row, targetItem);
       }
-    })
+      $$("conDupsGrid").sort("#id#", "asc", "int");
+      conDupsPanelCtlr.updates.push(targetItem.row);
+    });
+
+    this.grid.attachEvent("onAfterEditStop", function(state, editor, ignoreUpdate) {
+      if (state.value != state.old) {
+        conDupsPanelCtlr.updates.push(editor.row);
+      }
+    });
   },
 
   clear: function() {
@@ -108,61 +129,21 @@ var conDupsGridCtlr = {
     //dups.forEach(function(dup) {
     //  dup.dirty = false;
     //});
-    this.grid.parse(nextDups[0]);
+    this.grid.parse(nextDups);
     this.grid.adjust();
-  },
-
-  getDups: function(type) {
-    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-    var url = Flask.url_for("con.duplicates", {type: type});
-
-    ajaxDao.get(url, function(data) {
-      var dups = data["dups"];
-      if (dups.length == 0) {
-        webix.message("No duplicates!");
-        return;
-      }
-      conDupsGridCtlr.load(dups);
-    });
-  },
-
-  voterLookup: function() {
-    var items = this.grid.getSelectedItem(true);
-    if (items.length != 1) {
-      webix.message({type: "error", text: "Can lookup one at a time only!"});
-      return;
-    }
-
-    var item = {
-      last_name: items[0].last_name,
-      first_name: items[0].first_name,
-      last_name_meta: items[0].last_name_meta,
-      first_name_meta: items[0].first_name_meta,
-      address: ""
-    };
-
-    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-    var url = Flask.url_for("con.voter_lookup");
-
-    ajaxDao.post(url, item, function(data) {
-      voterMatchPopupCtlr.show(data["candidates"]);
-    });
   },
 
   remove: function() {
     var items = this.grid.getSelectedItem(true);
     var ids = [];
+    var idx = this.keyIdx;
     items.forEach(function(item) {
       ids.push(item.id);
+      delete dups[idx][item.id];
+      conDupsPanelCtlr.deletes.push(item.id);
     });
-
-    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-    var url = Flask.url_for("con.drop_many");
-
-    ajaxDao.post(url, {ids: ids}, function() {
-      $$("conDupsGrid").remove(ids);
-    });
-
+    this.grid.remove(ids);
+    webix.message('Record(s) will be removed upon saving.')
   },
 
   save: function() {
@@ -174,12 +155,12 @@ var conDupsGridCtlr = {
       }
     }
 
-    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-    var url = Flask.url_for("con.update_many");
-
-    ajaxDao.post(url, {data: updates}, function() {
-      webix.message("Update Successful!");
-    });
+    ////noinspection JSUnresolvedVariable,JSUnresolvedFunction
+    //var url = Flask.url_for("con.update_many");
+    //
+    //ajaxDao.post(url, {data: updates}, function() {
+    //  webix.message("Update Successful!");
+    //});
   },
 
   quit: function() {
@@ -242,9 +223,9 @@ var conDupsGridToolbar = {
         },
         {
           view: "button",
-          value: "Done",
+          value: "Save",
           width: 150,
-          click: "conDupsGridCtlr.quit();"
+          click: "conDupsGridCtlr.save();"
         },
         {}
       ]
@@ -263,6 +244,9 @@ var conDupsPanel = {
 Duplicates Grid Panel Controller
 =====================================================================*/
 var conDupsPanelCtlr = {
+  updates: [],
+  deletes: [],
+
   init: function() {
     conDupsGridCtlr.init();
     conDupsGridCtlr.next();
