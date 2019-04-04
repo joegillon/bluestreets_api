@@ -7,21 +7,23 @@
 {% block scripts %}
   {{ super() }}
   <script>
-{#    var cities = {{ cities|tojson }};#}
-{#    var precincts = {{ precincts|tojson }};#}
     var dups = {{ dups|tojson }};
+    var streetRecords = {{ streets|tojson }};
   </script>
   <script src="{{ url_for('static', filename='js/helpers.js') }}"></script>
   <script src="{{ url_for('static', filename='js/ajax_dao.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/contacts/condb.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/dups_panel.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/match_panel.js') }}"></script>
-{#  <script src="{{ url_for('static', filename='js/voter_match_popup.js') }}"></script>#}
+  <script src="{{ url_for('static', filename='js/contacts/name_popup.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/contacts/coa_popup.js') }}"></script>
 
   <script type="text/javascript" charset="utf-8">
 
     webix.ready(function() {
 
-{#      webix.ui(voterMatchPopup);#}
+      webix.ui(conNameFormPopup);
+      webix.ui(coaPopup);
 
       webix.ui({
         container: "content_container",
@@ -29,8 +31,8 @@
       });
 
       conDupsPanelCtlr.init();
-{#      voterMatchPopupCtlr.init();#}
-
+      conNameFormPopupCtlr.init();
+      coaPopupCtlr.init();
     });
   </script>
 {% endblock %}

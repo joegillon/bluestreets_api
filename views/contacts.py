@@ -99,14 +99,18 @@ def rename_fields(d):
         d['suffix'] = d.pop('name_suffix')
     return d
 
+dups = []
+
 
 @con.route('/duplicates', methods=['GET', 'POST'])
 def duplicates():
     import csv
     from bluestreets import app_path
+    from models.person_name import PersonName
+
+    global dups
 
     if request.method == 'GET':
-        dups = []
         fname = '%s/data_mgt/duplicate_report.csv' % app_path
         with open(fname, 'r', newline='') as csvfile:
             rdr = csv.reader(csvfile)
@@ -121,11 +125,34 @@ def duplicates():
         if not dups:
             return jsonify(msg='No duplicates!')
 
+        rex = Jurisdiction.query.all()
+        jurisdictions = {rec.code: rec.name for rec in rex}
+
+        rex = Street.query.filter_by(county_code=81).all()
+        streets = [rec.serialize() for rec in rex]
+        for street in streets:
+            street['pct_name'] = '%s %s %s' % (
+                jurisdictions[street['jurisdiction_code']],
+                street['ward'],
+                street['precinct']
+            )
+
         return render_template(
             'contacts/dups.html',
             dups=dups,
+            streets=streets,
             title='Duplicates'
         )
+
+    data = json.loads(request.form['params'])
+    for update in data[0]:
+        pn = PersonName(update)
+        nrex = Contact.query.filter_by(id=update['id']).update(
+            {
+
+            }
+        )
+    return jsonify(msg='Whoopee!')
 
 
 def serialize_dup(dup):

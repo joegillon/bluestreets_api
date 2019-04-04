@@ -33,7 +33,7 @@ var digitMappings = {
     '9': 'NINE'
   };
 
-function build_db() {
+function build_contacts_db() {
   contactsCollection = db.collection("contacts").deferredCalls(false);
   contactsCollection.insert(contactRecords);
 
@@ -43,13 +43,17 @@ function build_db() {
   membershipsCollection = db.collection("memberships").deferredCalls(false);
   membershipsCollection.insert(membershipRecords);
 
-  groupRecords.forEach(function(group) {
+  groupRecords.forEach(function (group) {
     membershipsCollection.update(
       {group_id: group.id},
       {group_name: group.name}
     )
   });
 
+  addDisplay2Contacts();
+}
+
+function build_streets_db() {
   streetsCollection = db.collection("streets").deferredCalls(false);
   streetsCollection.insert(streetRecords);
 
@@ -68,9 +72,6 @@ function build_db() {
     return street.city;
   });
   cityOptions.unshift({id: "", value: ""});
-
-  addDisplay2Contacts();
-
 }
 
 function addDisplay2Contacts() {
@@ -97,5 +98,22 @@ function addDisplay2Contacts() {
       };
     }
     contactsCollection.update({id: contact.id}, params);
+  });
+}
+
+function addDisplay2Dups() {
+  var pcts = streetsCollection.find(
+    {$distinct: {precinct_id: 1}},
+    {precinct_id: 1, pct_name: 1, _id: 0}
+  );
+  var pct_names = {};
+  pcts.forEach(function(pct) {
+    pct_names[pct['precinct_id']] = pct['pct_name'];
+  });
+
+  dups.forEach(function(dup) {
+    Object.values(dup).forEach(function(d) {
+      d['pct_name'] = pct_names[d['precinct_id']];
+    })
   });
 }

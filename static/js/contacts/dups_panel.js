@@ -9,6 +9,7 @@ var conDupsGrid = {
   view: "datatable",
   id: "conDupsGrid",
   editable: true,
+  editaction: "dblclick",
   multiselect: true,
   select: true,
   height: 200,
@@ -17,18 +18,16 @@ var conDupsGrid = {
   drag: true,
   columns: [
     {id: "id", header: "ID", adjust: true, readonly: true},
-    {id: "name", header: "Name", adjust: "data", sort: "string", editor: "text"},
-    {id: "address", header: "Address", adjust: true, sort: "string", editor: "text"},
-    //{id: "city", header: "City", sort: "string", editor: "select", options: cities},
-    {id: "zipcode", header: "Zip", sort: "string", editor: "text", width: 50},
+    {id: "name", header: "Name", adjust: "data", sort: "string"},
+    {id: "address", header: "Address", adjust: true, sort: "string"},
+    {id: "zipcode", header: "Zip", sort: "string", width: 50},
     {id: "email", header: "Email", adjust: "data", sort: "string", editor: "text"},
     {id: "phone1", header: "Phone 1", sort: "string", editor: "text"},
     {id: "phone2", header: "Phone 2", sort: "string", editor: "text"},
-    {id: "birth_year", header: "BYr", readonly: true, sort: "string", width: 50},
-    {id: "gender", header: "Sex", adjust: "header", readonly: true, sort: "string", width: 50},
+    {id: "birth_year", header: "BYr", editor: "text", sort: "string", width: 50},
+    {id: "gender", header: "Sex", adjust: "header", editor: "upperCaseEditor", sort: "string", width: 50},
     {id: "voter_id", header: "Voter ID", adjust: "data", readonly: true, sort: "string"},
-    {id: "precinct_id", header: "Pct", adjust: "data", readonly: true, sort: "string"},
-    {id: "dirty", hidden: true}
+    {id: "pct_name", header: "Pct", adjust: "data", readonly: true, sort: "string"}
   ]
 };
 
@@ -38,64 +37,152 @@ Duplicates Grid Controller
 var conDupsGridCtlr = {
   grid: null,
   sourceColumn: null,
+  sourceValue: "",
 
   init: function() {
     this.grid = $$("conDupsGrid");
     this.keyIdx = -1;
 
-    // These events won't work properly unless they are here. Ugh.
     this.grid.attachEvent("onBeforeDrag", function(context, ev) {
       var sourceInfo = this.locate(ev);
-      if (['id', 'voter_id', 'precinct_id'].indexOf(sourceInfo.column) >= 0) {
-        var hdrText = $$("conDupsGrid").getColumnConfig(sourceInfo.column).header[0].text;
+
+      this.sourceValue = this.getText(sourceInfo.row, sourceInfo.column);
+      if (isEmpty(this.sourceValue)) {
+        webix.message({type: "error", text: "Can't drag empty field!"});
+        return false;
+      }
+
+      if (conDupsGridCtlr.isVoterRec(sourceInfo.row)) {
+        webix.message({type: "error", text: "Can't drag from voter record!"});
+        return false;
+      }
+
+      if (isIn(sourceInfo.column, ['id', 'voter_id', 'precinct_id'])) {
+        var hdrText = this.getColumnConfig(sourceInfo.column).header[0].text;
         webix.message({type: "error", text: "Can't drag " + hdrText + "!"});
         return false;
       }
-      if (['name', 'address', 'zipcode', 'birth_year', 'gender'].indexOf(sourceInfo.column) >= 0) {
-        var voter_id = $$("conDupsGrid").getText(sourceInfo.row, "voter_id");
-        if (voter_id != "") {
-          var hdrText = $$("conDupsGrid").getColumnConfig(sourceInfo.column).header[0].text;
-          webix.message({type: "error", text: "Can't drag " + hdrText + " of voter record!"});
-          return false;
-        }
-      }
+
       this.sourceColumn = sourceInfo.column;
-      context.value = context.from.getItem(sourceInfo.row)[sourceInfo.column];
-      context.html = "<div style='padding: 8px;'>" +
-          context.value + "<br></div>";
+
+      context.html = "<div style='padding: 8px;'>" + this.sourceValue + "<br></div>";
     });
 
-    this.grid.attachEvent("onBeforeDrop", function(context) {
-      if (this.sourceColumn != context.target.column) {
+    this.grid.attachEvent("onBeforeDrop", function(context, ev) {
+      var targetInfo = this.locate(ev);
+
+      if (conDupsGridCtlr.isCrossColumns(this.sourceColumn, targetInfo.column)) {
         webix.message({type: "error", text: "Can't drag across columns!"});
         return false;
       }
-      var item = this.getItem(context.target.row);
-      var currentValue = item[context.target.column];
-      var newValue = context.value;
-      if (currentValue == newValue) {
+
+      var isVoterRec = conDupsGridCtlr.isVoterRec(targetInfo.row);
+
+      if (isVoterRec && isIn(targetInfo.column, ["name", "address", "zipcode"])) {
+        webix.message({type: "error", text: "Must use Change of Name or Address buttons!"});
         return false;
       }
-      item[context.target.column] = context.value;
-      item.dirty = true;
-      this.updateItem(context.target.row, item);
+
+      if (isVoterRec && isIn(targetInfo.column, ["birth_year", "gender"])) {
+        webix.message({type: "error", text: "Can't drag Byr or Sex onto voter record!"});
+        return false;
+      }
+
+      var targetValue = this.getText(targetInfo.row, targetInfo.column);
+      if (this.sourceValue == targetValue) {
+        return false;
+      }
+
+      var newItem = this.getItem(targetInfo.row);
+      newItem[targetInfo.column] = this.sourceValue;
+      this.updateItem(targetInfo.row, newItem);
     });
 
     this.grid.attachEvent("onAfterDrop", function(context) {
       var targetItem = $$("conDupsGrid").getItem(context.target.row);
-      if (context.target.column == "address") {
-        var sourceItem = $$("conDupsGrid").getItem(context.source);
-        //targetItem.city = sourceItem.city;
-        targetItem.zipcode = sourceItem.zipcode;
-        $$("conDupsGrid").updateItem(context.target.row, targetItem);
-      }
-      $$("conDupsGrid").sort("#id#", "asc", "int");
       conDupsPanelCtlr.updates.push(targetItem.row);
+      $$("conDupsGrid").sort("#id#", "asc", "int");
     });
 
     this.grid.attachEvent("onAfterEditStop", function(state, editor, ignoreUpdate) {
+      if (editor.column == "email") {
+        if (state.value != "" && !isEmail(state.value)) {
+          webix.message({type: "error", text:"Invalid email!"});
+          this.editCell(editor.row, editor.column, true, false);
+          return false;
+        }
+      }
+
+      if (isIn(editor.column, ["phone1", "phone2"])) {
+        if (state.value != "" && !isPhone(state.value)) {
+          webix.message({type: "error", text:"Invalid phone #!"});
+          this.editCell(editor.row, editor.column, true, false);
+          return false;
+        }
+      }
+
+      if (editor.column == "birth_year") {
+        if (state.value != "" && !isValidByr(state.value)) {
+          webix.message({type: "error", text:"Invalid BYr!"});
+          this.editCell(editor.row, editor.column, true, false);
+          return false;
+        }
+      }
+
+      if (editor.column == "gender") {
+        if (state.value != "" && !isIn(state.value, ["M", "F"])) {
+          webix.message({type: "error", text:"Invalid sex!"});
+          this.editCell(editor.row, editor.column, true, false);
+          return false;
+        }
+
+      }
       if (state.value != state.old) {
         conDupsPanelCtlr.updates.push(editor.row);
+      }
+    });
+
+    this.grid.attachEvent("onItemDblClick", function(id, e, node) {
+
+      var grid = $$("conDupsGrid");
+//       grid.editStop();
+
+      var isVoterRec = conDupsGridCtlr.isVoterRec(id.row);
+
+      if (id.column == "name") {
+        if (isVoterRec) {
+          webix.confirm(
+            "Are you sure you want to change this voter record name?",
+            "confirm-warning",
+            function (yes) {
+              if (yes) {
+                conNameFormPopupCtlr.show();
+              }
+            }
+          );
+        } else {
+          conNameFormPopupCtlr.show();
+        }
+      }
+
+      if (isIn(id.column, ["address", "zipcode"])) {
+        if (isVoterRec) {
+          webix.confirm(
+            "Are you sure you want to change this voter record address?",
+            "confirm-warning",
+            function (yes) {
+              if (yes) {
+                coaPopupCtlr.show();
+              }
+            }
+          );
+        } else {
+          coaPopupCtlr.show();
+        }
+      }
+
+      if (isIn(id.column, ["email", "phone1", "phone2"])) {
+        grid.editCell(id.row, id.column, false, false)
       }
     });
   },
@@ -126,9 +213,6 @@ var conDupsGridCtlr = {
 
   load: function(nextDups) {
     this.clear();
-    //dups.forEach(function(dup) {
-    //  dup.dirty = false;
-    //});
     this.grid.parse(nextDups);
     this.grid.adjust();
   },
@@ -146,25 +230,38 @@ var conDupsGridCtlr = {
     webix.message('Record(s) will be removed upon saving.')
   },
 
-  save: function() {
-    var items = this.grid.data.pull;
-    var updates = [];
-    for (var key in items) {
-      if (items[key].dirty) {
-        updates.push(items[key]);
-      }
-    }
-
-    ////noinspection JSUnresolvedVariable,JSUnresolvedFunction
-    //var url = Flask.url_for("con.update_many");
-    //
-    //ajaxDao.post(url, {data: updates}, function() {
-    //  webix.message("Update Successful!");
-    //});
+  isVoterRec: function(row) {
+    var voter_id = this.grid.getText(row, "voter_id");
+    return voter_id !== "";
   },
 
-  quit: function() {
+  isCrossColumns: function(srcCol, tarCol) {
+    var pattern = new RegExp("^phone");
+    if (pattern.test(srcCol) && pattern.test(tarCol))
+      return false;
+    return srcCol != tarCol;
+  },
 
+  save: function() {
+    var updateRex = [];
+    dups.forEach(function(dup) {
+      Object.keys(dup).forEach(function(id) {
+        if (conDupsPanelCtlr.updates.indexOf(parseInt(id)) >= 0)
+          updateRex.push(Object.values(dup)[0])
+      })
+    });
+
+    var data = {
+      'updates': updateRex,
+      'deletes': conDupsPanelCtlr.deletes
+    };
+
+    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+    var url = Flask.url_for("con.duplicates");
+
+    ajaxDao.post(url, [updateRex, conDupsPanelCtlr.deletes], function() {
+      webix.message("Update Successful!");
+    });
   }
 };
 
@@ -248,7 +345,20 @@ var conDupsPanelCtlr = {
   deletes: [],
 
   init: function() {
+    build_streets_db();
+    addDisplay2Dups();
+    this.setEditors();
     conDupsGridCtlr.init();
     conDupsGridCtlr.next();
+  },
+
+  setEditors: function() {
+    webix.editors.upperCaseEditor = webix.extend({
+      render: function() {
+        return webix.html.create("div", {
+          "class": "webix_dt_editor",
+        }, "<input type='text' onkeyup='this.value=this.value.toUpperCase();'>");
+      }
+    }, webix.editors.text);
   }
 };

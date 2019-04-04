@@ -1,7 +1,7 @@
 /* conMgtPanel: conGridPanel, conDetailPanel */
 
 /*=====================================================================
-Contact Globals
+Database
 =====================================================================*/
 var contactsCollection;
 var groupsCollection;
@@ -21,7 +21,8 @@ var conMgtPanel = {
 
 var conMgtPanelCtlr = {
   init: function() {
-    build_db();
+    build_contacts_db();
+    build_streets_db();
     conGridPanelCtlr.init();
     conDetailPanelCtlr.init();
 

@@ -38,8 +38,9 @@ function phone_uglify(phone) {
 }
 
 function isPhone(value) {
+  if (value == "") return true;
   value = phone_uglify(value);
-  return value == "" || value.match(/^\d{10}$/);
+  return value.match(/^\d{10}$/);
 }
 
 function phoneMask(input) {
@@ -215,7 +216,7 @@ function isValidName(s) {
 }
 
 function isValidNameChar(c) {
-  return /^[A-Z,' -]$/.test(c);
+  return /^[A-Za-z,' -]$/.test(c);
 }
 
 function handleNameInput(code, ctl) {
@@ -225,6 +226,20 @@ function handleNameInput(code, ctl) {
     ctl.setValue(ctl.getValue() + c);
   }
   return false;
+}
+
+function validNameChar(value) {
+  if (isValidNameChar(value)) return value.toUpperCase();
+  return null;
+}
+
+function nameKeyPress(e) {
+  var keynum = e.which;
+  if (keynum < 32) return true;
+  var c = String.fromCharCode(keynum & 95);
+  if (isValidNameChar(c))
+    return c;
+  return true;
 }
 
 function multipleValidator() {
@@ -281,4 +296,19 @@ function sortByHouseDistrict(a, b) {
   a = a.voter_info.house;
   b = b.voter_info.house;
   return a > b ? 1 : (a < b ?  -1 : 0);
+}
+
+function isIn(target, list) {
+  return list.indexOf(target) >= 0;
+}
+
+function isEmpty(value) {
+  return value === "undefined" || value === null || value == "";
+}
+
+function isValidByr(value) {
+  if (value.length != 4) return false;
+  if (!isDigit(value)) return false;
+  var intVal = parseInt(value);
+  return intVal >= 1920;
 }
