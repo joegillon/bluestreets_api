@@ -158,7 +158,11 @@ def duplicates():
 def serialize_dup(dup):
     return {
         'id': dup.id,
-        'name': get_name(dup),
+        'last': dup.last,
+        'first': dup.first,
+        'middle': dup.middle,
+        'suffix': dup.suffix,
+        'nickname': dup.nickname,
         'address': get_address(dup),
         'city': dup.city,
         'zipcode': dup.zipcode,

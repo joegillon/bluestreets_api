@@ -22,7 +22,12 @@ var conNameForm = {
               required: true,
               width: 200,
               validate: webix.rules.isNotEmpty,
-              invalidMessage: "Last name required!"
+              invalidMessage: "Last name required!",
+              on: {
+                onKeyPress: function(code) {
+                  return handleNameInput(code, this);
+                }
+              }
             },
             {
               view: "text",
@@ -31,19 +36,34 @@ var conNameForm = {
               required: true,
               width: 100,
               validate: webix.rules.isNotEmpty,
-              invalidMessage: "First name required!"
+              invalidMessage: "First name required!",
+              on: {
+                onKeyPress: function(code) {
+                  return handleNameInput(code, this);
+                }
+              }
             },
             {
               view: "text",
               label: "Middle",
               name: "middle",
-              width: 100
+              width: 100,
+              on: {
+                onKeyPress: function(code) {
+                  return handleNameInput(code, this);
+                }
+              }
             },
             {
               view: "text",
               label: "Suffix",
               name: "suffix",
-              width: 50
+              width: 50,
+              on: {
+                onTimedKeyPress: function() {
+                  this.setValue(this.getValue().toUpperCase());
+                }
+              }
             }
           ]
         },
@@ -52,7 +72,13 @@ var conNameForm = {
             {
               view: "text",
               label: "Nickname",
-              name: "nickname"
+              name: "nickname",
+              invalidMessage: "Invalid nickname characters!",
+              on: {
+                onKeyPress: function(code) {
+                  return handleNameInput(code, this);
+                }
+              }
             }
           ]
         }
@@ -73,6 +99,10 @@ var conNameFormCtlr = {
 
   clear: function() {
     this.frm.clear();
+  },
+
+  getValues: function() {
+    return this.frm.getValues();
   }
 };
 
@@ -96,6 +126,11 @@ var conNameFormPopup = {
         view: "label",
         css: "popup_header",
         label: "Contact Name Form"
+      },
+      {
+        view: "button",
+        value: "Clear",
+        click: "conNameFormCtlr.clear();"
       },
       {
         view: "button",
@@ -127,10 +162,20 @@ var conNameFormPopupCtlr = {
   },
 
   hide: function() {
+    conNameFormCtlr.clear();
     this.popup.hide();
   },
 
   submit: function() {
-    //var values = conNameFormCtlr.getValues();
+    var values = conNameFormCtlr.getValues();
+    var currentItem = conDupsGridCtlr.getSelectedItem();
+    if (values.last != "") currentItem.last = values.last;
+    if (values.first != "") currentItem.first = values.first;
+    if (values.middle != "") currentItem.middle = values.middle;
+    if (values.suffix != "") currentItem.suffix = values.suffix;
+    if (values.nickname != "") currentItem.nickname = values.nickname;
+    currentItem.name = wholeName(currentItem);
+    conDupsGridCtlr.updateSelectedItem(currentItem);
+    this.hide();
   }
 };

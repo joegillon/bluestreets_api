@@ -15,10 +15,11 @@ var conDupsGrid = {
   height: 200,
   autoWidth: true,
   resizeColumn: true,
+  tooltip: true,
   drag: true,
   columns: [
     {id: "id", header: "ID", adjust: true, readonly: true},
-    {id: "name", header: "Name", adjust: "data", sort: "string"},
+    {id: "name", header: "Name", adjust: "data", sort: "string", tooltip: "#nickname#"},
     {id: "address", header: "Address", adjust: true, sort: "string"},
     {id: "zipcode", header: "Zip", sort: "string", width: 50},
     {id: "email", header: "Email", adjust: "data", sort: "string", editor: "text"},
@@ -240,6 +241,14 @@ var conDupsGridCtlr = {
     if (pattern.test(srcCol) && pattern.test(tarCol))
       return false;
     return srcCol != tarCol;
+  },
+
+  getSelectedItem: function() {
+    return this.grid.getSelectedItem();
+  },
+
+  updateSelectedItem: function(item) {
+    this.grid.updateItem(this.grid.getSelectedId(), item);
   },
 
   save: function() {

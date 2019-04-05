@@ -21,8 +21,8 @@ var conMgtPanel = {
 
 var conMgtPanelCtlr = {
   init: function() {
-    build_contacts_db();
     build_streets_db();
+    build_contacts_db();
     conGridPanelCtlr.init();
     conDetailPanelCtlr.init();
 

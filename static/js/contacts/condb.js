@@ -114,6 +114,7 @@ function addDisplay2Dups() {
   dups.forEach(function(dup) {
     Object.values(dup).forEach(function(d) {
       d['pct_name'] = pct_names[d['precinct_id']];
+      d['name'] = wholeName(d)
     })
   });
 }
