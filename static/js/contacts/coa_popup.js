@@ -32,12 +32,12 @@ var coaForm = {
               name: "city",
               label: "City",
               //width: 300,
-              suggest: [],
-              on: {
-                onBlur: function() {
-                  coaFormCtlr.setStreets(this.getValue());
-                }
-              }
+              suggest: []
+//               on: {
+//                 onBlur: function() {
+//                   coaFormCtlr.setStreets(this.getValue());
+//                 }
+//               }
             }
           ]
         },
@@ -52,17 +52,17 @@ var coaForm = {
             {
               view: "text",
               name: "house_number",
-              label: "House #",
+              label: "House #"
+            },
+            {
+              view: "text",
+              name: "unit",
+              label: "Unit",
               on: {
                 onBlur: function() {
                   coaFormCtlr.process();
                 }
               }
-            },
-            {
-              view: "text",
-              name: "unit",
-              label: "Unit"
             }
           ]
         },
@@ -132,7 +132,7 @@ var coaFormCtlr = {
     }
     var rex = streetsCollection.find(cond);
     rex = rex.map(function(rec) {
-      return rec.display_name;
+      return rec.display;
     });
     var s = new Set(rex);
     var streets = Array.from(s).sort();;
@@ -143,15 +143,15 @@ var coaFormCtlr = {
 
   process: function() {
     var vals = this.frm.getValues();
-    var addr = vals["house_number"] + " " + vals["street"] + ", " +
-        vals["city"] + " " + vals.zipcode;
+    var addr = vals["house_number"] + " " + vals["street"];
+    if (vals.unit != "") addr += ", UNIT " + vals.unit;
     this.frm.elements.address.setValue(addr);
 
     var house_number = parseInt(vals.house_number);
     var odd_even = (house_number % 2 == 0) ? "E": "O";
     var p = streetsCollection.findOne({
       zipcode: vals.zipcode,
-      display_name: vals.street,
+      display: vals.street,
       house_num_low: {'$lte': house_number},
       house_num_high: {'$gte': house_number},
       odd_even: {'$in': ["B", odd_even]}
@@ -163,6 +163,10 @@ var coaFormCtlr = {
     } else {
       this.frm.elements.precinct.setValue("Invalid address!");
     }
+  },
+
+  getValues: function() {
+    return this.frm.getValues();
   }
 };
 
@@ -225,5 +229,12 @@ var coaPopupCtlr = {
 
   submit: function() {
     var values = coaFormCtlr.getValues();
+    var currentItem = conDupsGridCtlr.getSelectedItem();
+    currentItem.address = values.address;
+    currentItem.zipcode = values.zipcode;
+    currentItem.precinct_id = values.precinct_id;
+    currentItem.pct_name = values.precinct;
+    conDupsGridCtlr.updateSelectedItem(currentItem);
+    this.hide();
   }
 };

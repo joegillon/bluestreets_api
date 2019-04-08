@@ -106,9 +106,11 @@ dups = []
 def duplicates():
     import csv
     from bluestreets import app_path
-    from models.person_name import PersonName
+    from config.extensions import db
+    from models.address import Address
 
     global dups
+    dups = []
 
     if request.method == 'GET':
         fname = '%s/data_mgt/duplicate_report.csv' % app_path
@@ -146,12 +148,23 @@ def duplicates():
 
     data = json.loads(request.form['params'])
     for update in data[0]:
-        pn = PersonName(update)
-        nrex = Contact.query.filter_by(id=update['id']).update(
-            {
+        addr = Address(update)
+        for attr in [
+                'house_number', 'pre_direction', 'street_name',
+                'street_type', 'suf_direction', 'unit']:
+            update[attr] = getattr(addr, attr)
+        del update['address']
+        update_id = update['id']
+        del update['id']
+        del update['pct_name']
+        del update['name']
+        nrex = Contact.query.filter_by(id=update_id).update(update)
 
-            }
-        )
+    for rec_id in data[1]:
+        Contact.query.filter_by(id=rec_id).delete()
+
+    db.session.commit()
+
     return jsonify(msg='Whoopee!')
 
 

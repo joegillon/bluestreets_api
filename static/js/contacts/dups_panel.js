@@ -249,6 +249,7 @@ var conDupsGridCtlr = {
 
   updateSelectedItem: function(item) {
     this.grid.updateItem(this.grid.getSelectedId(), item);
+    conDupsPanelCtlr.updates.push(item.id);
   },
 
   save: function() {
@@ -259,11 +260,6 @@ var conDupsGridCtlr = {
           updateRex.push(Object.values(dup)[0])
       })
     });
-
-    var data = {
-      'updates': updateRex,
-      'deletes': conDupsPanelCtlr.deletes
-    };
 
     //noinspection JSUnresolvedVariable,JSUnresolvedFunction
     var url = Flask.url_for("con.duplicates");
