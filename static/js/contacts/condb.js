@@ -37,6 +37,10 @@ function build_contacts_db() {
   contactsCollection = db.collection("contacts").deferredCalls(false);
   contactsCollection.insert(contactRecords);
 
+  addDisplay2Contacts();
+}
+
+function build_groups_db() {
   groupsCollection = db.collection("groups").deferredCalls(false);
   groupsCollection.insert(groupRecords);
 
@@ -49,8 +53,6 @@ function build_contacts_db() {
       {group_name: group.name}
     )
   });
-
-  addDisplay2Contacts();
 }
 
 function build_streets_db() {

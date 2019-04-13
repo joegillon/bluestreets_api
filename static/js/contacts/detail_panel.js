@@ -19,7 +19,6 @@ var conDetailPanelCtlr = {
     conFormPanelCtlr.init();
     conMatchPanelCtlr.init();
     coaPopupCtlr.init();
-    memPopupCtlr.init();
   }
 };
 

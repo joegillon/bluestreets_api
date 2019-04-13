@@ -1,0 +1,41 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+  <div id="content_container" style="padding-left: 10px"></div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+
+  <script>
+    var contactRecords = {{ contacts|tojson }};
+    var streetRecords = {{ streets|tojson }};
+  </script>
+
+  <script src="{{ url_for('static', filename='js/lib/double-metaphone.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/lib/parse-address.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/lib/fuzzball.umd.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/contacts/condb.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/contacts/form_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/contacts/match_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/contacts/detail_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/contacts/coa_popup.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/contacts/pcts_panel.js') }}"></script>
+
+  <script type="text/javascript" charset="utf-8">
+
+    webix.ready(function() {
+
+      // C, V, S grids are to show possible matches
+{#      webix.ui(conCGrid);#}
+{#      webix.ui(conVGrid);#}
+{#      webix.ui(conSGrid);#}
+
+      // Change of address
+{#      webix.ui(coaPopup);#}
+
+      conPctPanelCtlr.init();
+  });
+
+  </script>
+{% endblock %}

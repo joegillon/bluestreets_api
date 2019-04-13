@@ -29,55 +29,17 @@
 
   <script type="text/javascript" charset="utf-8">
 
-    var gridView = {
-      id: "gridView",
-      rows: [conGridPanel],
-      autowidth: true
-    };
-
-    var detailView = {
-      id: "detailView",
-      rows: [conDetailPanel],
-      autowidth: true
-    };
-
     webix.ready(function() {
 
-      webix.ui(conCGrid);
-      webix.ui(conVGrid);
-      webix.ui(conSGrid);
-      webix.ui(coaPopup);
-      webix.ui(memPopup);
-      webix.ui(csvExportTable);
-
-      webix.ui({
-        container: "content_container",
-{#        type: "space",#}
-        rows: [
-          {
-            view: "segmented",
-            id: "conTabBar",
-            value: "gridView",
-            multiview: true,
-            optionWidth: 80,
-            align: "left",
-{#            padding: 5,#}
-            options: [
-{#              {value: "Grid", id: "gridView"},#}
-{#              {value: "Details", id: "detailView"}#}
-            ]
-          },
-{#          {height: 5},#}
-          {
-            cells: [gridView, detailView],
-            autowidth: true
-          }
-        ]
-      });
-
-
+{#      webix.ui(conCGrid);#}
+{#      webix.ui(conVGrid);#}
+{#      webix.ui(conSGrid);#}
+{#      webix.ui(coaPopup);#}
+{#      webix.ui(memPopup);#}
+{#      webix.ui(csvExportTable);#}
+{##}
       conMgtPanelCtlr.init();
-      csvExportTableCtlr.init();
+{#      csvExportTableCtlr.init();#}
   });
 
   </script>

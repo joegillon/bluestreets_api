@@ -312,3 +312,7 @@ function isValidByr(value) {
   var intVal = parseInt(value);
   return intVal >= 1920;
 }
+
+function insertArrayAt(array, index, arrayToInsert) {
+  Array.prototype.splice.apply(array, [index, 0].concat(arrayToInsert));
+}

@@ -38,7 +38,7 @@ def grid():
             )
 
         return render_template(
-            'contacts/grid.html',
+            'contacts/mgt.html',
             contacts=contacts,
             groups=groups,
             members=memberships,
@@ -213,3 +213,32 @@ def get_address(dup):
     if dup.unit:
         s += ' Unit ' + dup.unit
     return s
+
+
+@con.route('/precincts', methods=['GET', 'POST'])
+def precincts():
+    if request.method == 'GET':
+        rex = Contact.query.filter((Contact.precinct_id.is_(None))) \
+            .order_by(Contact.last, Contact.first, Contact.middle).all()
+        if not rex:
+            return jsonify(msg='No contacts without precinct!')
+        contacts = [rec.serialize() for rec in rex]
+
+        rex = Jurisdiction.query.all()
+        jurisdictions = {rec.code: rec.name for rec in rex}
+
+        rex = Street.query.filter_by(county_code=81).all()
+        streets = [rec.serialize() for rec in rex]
+        for street in streets:
+            street['pct_name'] = '%s %s %s' % (
+                jurisdictions[street['jurisdiction_code']],
+                street['ward'],
+                street['precinct']
+            )
+
+        return render_template(
+            'contacts/pcts.html',
+            contacts=contacts,
+            streets=streets,
+            title='Assign Precincts'
+        )

@@ -20,34 +20,10 @@ var conFormToolbar = {
     {
       view: "button",
       type: "icon",
-      icon: "envelope",
-      width: 25,
-      tooltip: "Email Contact",
-      click: "conFormToolbarCtlr.email();"
-    },
-    {
-      view: "button",
-      type: "icon",
       icon: "address-card",
       width: 25,
       tooltip: "Change of Address",
       click: "conFormToolbarCtlr.coa();"
-    },
-    {
-      view: "button",
-      type: "icon",
-      icon: "users",
-      width: 25,
-      tooltip: "Manage Groups",
-      click: "conFormToolbarCtlr.groups();"
-    },
-    {
-      view: "button",
-      type: "icon",
-      icon: "tags",
-      width: 25,
-      tooltip: "Tag Contact",
-      click: "conFormToolbarCtlr.tags();"
     },
     {
       view: "button",
@@ -291,43 +267,6 @@ var conForm = {
           readonly: true
         }
       ]
-    },
-    {
-      cols: [
-        {
-          rows: [
-            {
-              view: "label",
-              label: "Groups"
-            },
-            {
-              view: "list",
-              id: "groupList",
-              template: "#group_name#",
-              tooltip: {
-                template: "#role#"
-              },
-              readonly: true,
-              height: 100
-            }
-          ]
-        },
-        {
-          rows: [
-            {
-              view: "label",
-              label: "Tags"
-            },
-            {
-              view: "list",
-              label: "Tags",
-              name: "tags",
-              readonly: true,
-              height: 100
-            }
-          ]
-        }
-      ]
     }
   ],
   rules: {
@@ -367,7 +306,6 @@ var conFormCtlr = {
 
   // This func is called by the global event handler in the mgt panel
   clear: function() {
-    $$("groupList").clearAll();
     this.frm.clear();
     this.frm.clearValidation();
     conMatchPanelCtlr.clear();
@@ -393,8 +331,8 @@ var conFormCtlr = {
     )
   },
 
-  loadContact: function(contactId) {
-    this.loadMemberships(contactId);
+  loadContact: function(contactId, withMemberships) {
+    if (withMemberships) this.loadMemberships(contactId);
     var contact = contactsCollection.findOne({id: contactId});
     this.frm.setValues(contact, true);
     this.locationReadOnly(true);
