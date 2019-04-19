@@ -63,9 +63,9 @@ var conMatchToolbarCtlr = {
       return;
     }
     var params = {
-      last_name: values.name.last,
-      first_name: values.name.first,
-      middle_name: values.name.middle,
+      last: values.name.last,
+      first: values.name.first,
+      middle: values.name.middle,
       address: values.address.whole_addr,
       city: values.address.city,
       zipcode: values.address.zipcode
@@ -109,7 +109,7 @@ var conMatchToolbarCtlr = {
     var metaName = double_metaphone(compName)[0];
 
     var cond = {
-      street_name_meta: metaName
+      street_metaphone: metaName
     };
     if (addr.hasOwnProperty("number")) {
       cond.house_num_low = {"$lte": house_num};
@@ -193,20 +193,25 @@ var conVGrid = {
   select: "row",
   hidden: true,
   tooltip: true,
+  autowidth: true,
   columns: [
     {
       header: 'Name',
       template: "#name.whole_name#",
       adjust: "data",
-      fillspace: true,
       tooltip: "#voter_info.gender#, born #voter_info.birth_year#"
     },
    {
       header: 'Address',
       template: "#address.whole_addr#",
       adjust: "data",
-      fillspace: true,
       tooltip: "#address.city# #address.zipcode#"
+    },
+    {
+      header: "Reg Date",
+      template: "#voter_info.reg_date#",
+      adjust: "data",
+      tooltip: "#voter_info.precinct_name#"
     }
   ],
   on: {
@@ -224,8 +229,8 @@ var conSGrid = {
   tooltip: true,
   columns: [
    {
-      header: 'Address',
-      template: "#display_name#",
+      header: 'Street',
+      template: "#display#",
       adjust: "data",
       tooltip: "#pct_name#"
     },

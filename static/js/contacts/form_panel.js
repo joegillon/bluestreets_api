@@ -20,6 +20,14 @@ var conFormToolbar = {
     {
       view: "button",
       type: "icon",
+      icon: "envelope",
+      width: 25,
+      tooltip: "Email Contact",
+      click: "conFormToolbarCtlr.email();"
+    },
+    {
+      view: "button",
+      type: "icon",
       icon: "address-card",
       width: 25,
       tooltip: "Change of Address",
@@ -54,11 +62,12 @@ var conFormToolbarCtlr = {
   },
 
   email: function() {
-    var values = this.getValues();
-    if (values.id == "") {
-      this.clear();
-      return;
-    }
+    webix.message("Not yet implemented");
+//     var values = this.getValues();
+//     if (values.id == "") {
+//       this.clear();
+//       return;
+//     }
     // TODO: email contact
   },
 
@@ -113,6 +122,7 @@ var conForm = {
         },
         {
           view: "text",
+          type: "email",
           label: "Email",
           name: "contact_info.email",
           width: 200,
@@ -127,10 +137,8 @@ var conForm = {
           view: "text",
           label: "Phone 1",
           name: "contact_info.phone1",
-          attributes: [
-            {type: "tel"},
-            {pattern: "[0-9]{3}-[0-9]{3}-[0-9]{4}"}
-          ],
+          type: "tel",
+          attributes: {pattern: "[0-9]{3}-[0-9]{3}-[0-9]{4}"},
           width: 130,
           invalidMessage: "Invalid phone 1!",
           on: {
@@ -146,6 +154,8 @@ var conForm = {
           view: "text",
           label: "Phone 2",
           name: "contact_info.phone2",
+          type: "tel",
+          attributes: {pattern: "[0-9]{3}-[0-9]{3}-[0-9]{4}"},
           width: 130,
           invalidMessage: "Invalid phone 2!",
           on: {
@@ -235,7 +245,7 @@ var conForm = {
           view: "text",
           label: "Address",
           name: "address.whole_addr",
-          width: 300,
+          width: 260,
           invalidMessage: "Address does not exist!",
           on: {
             onTimedKeyPress: function() {
@@ -255,6 +265,11 @@ var conForm = {
           name: "address.zipcode",
           width: 70,
           options: []
+        },
+        {
+          view: "checkbox",
+          label: "Keep",
+          id: "chkKeep"
         }
       ]
     },
@@ -264,6 +279,16 @@ var conForm = {
           view: "text",
           label: "Precinct",
           name: "voter_info.precinct_name",
+          readonly: true
+        }
+      ]
+    },
+    {
+      cols: [
+        {
+          view: "text",
+          label: "Last Modified",
+          name: "record_info.updated_at",
           readonly: true
         }
       ]
@@ -324,28 +349,35 @@ var conFormCtlr = {
     });
   },
 
-  loadMemberships: function(contactId) {
-    $$("groupList").clearAll();
-    $$("groupList").parse(
-      membershipsCollection.find({contact_id: contactId})
-    )
-  },
-
-  loadContact: function(contactId, withMemberships) {
-    if (withMemberships) this.loadMemberships(contactId);
-    var contact = contactsCollection.findOne({id: contactId});
-    this.frm.setValues(contact, true);
-    this.locationReadOnly(true);
-    conMatchGridCtlr.config("C");
-  },
-
   loadVoter: function(voter) {
     var contact_id = this.frm.elements.id.getValue();
     if (contact_id != "") {
       voter.id = contact_id;
     }
-    this.frm.setValues(voter, true);
+    const contact = jsonCopy(voter);
+    if ($$("chkKeep").getValue() == 1) {
+      var street = new Street(this.getValues().address);
+      var matches = street.getMatches(streetsCollection);
+      if (matches.length != 1) {
+        webix.message({type: "error", text: "Unable to resolve contact address to a precinct!"});
+        return;
+      }
+      contact.address.city = matches[0].city;
+      contact.address.pre_direction = matches[0].pre_direction;
+      contact.address.street_name = matches[0].street_name;
+      contact.address.street_type = matches[0].street_type;
+      contact.address.suf_direction = matches[0].suf_direction;
+      contact.address.whole_addr = matches[0].display;
+      contact.address.zipcode = matches[0].zipcode;
+      if (contact.voter_info.precinct_id != matches[0].precinct_id)
+        contact.voter_info.voter_id = contact.voter_info.voter_id * -1;
+      contact.voter_info.precinct_id = matches[0].precinct_id;
+      contact.voter_info.precinct_name = matches[0].pct_name;
+    }
+
+    this.frm.setValues(contact, true);
     this.locationReadOnly(true);
+
 
     // TODO: set name fields to readonly
   },
@@ -355,7 +387,7 @@ var conFormCtlr = {
       address: {
         whole_addr: rebuildAddress(
           this.frm.elements["address.whole_addr"].getValue(),
-          street.display_name
+          street.display
         ),
         city: street.city,
         zipcode: street.zipcode

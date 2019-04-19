@@ -1,25 +1,19 @@
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy.ext.hybrid import hybrid_property
 from config.extensions import db
 from models.ts_mixin import TimestampMixin
 from utils.match import MatchLib
 
 
-class Contact(TimestampMixin, db.Model):
-    __tablename__ = 'contacts'
+class Voter(TimestampMixin, db.Model):
+    __tablename__ = 'voters'
 
-    id = db.Column(db.Integer, primary_key=True)
     last = db.Column(db.Text, nullable=False)
     first = db.Column(db.Text, nullable=False)
     middle = db.Column(db.Text)
     suffix = db.Column(db.Text)
-    nickname = db.Column(db.Text)
     name_metaphone = db.Column(db.Text, nullable=False)
     birth_year = db.Column(db.Integer)
     gender = db.Column(db.Text)
-    email = db.Column(db.Text)
-    phone1 = db.Column(db.Text)
-    phone2 = db.Column(db.Text)
-    email_metaphone = db.Column(db.Text)
     house_number = db.Column(db.Integer)
     pre_direction = db.Column(db.Text)
     street_name = db.Column(db.Text)
@@ -30,18 +24,18 @@ class Contact(TimestampMixin, db.Model):
     city = db.Column(db.Text)
     zipcode = db.Column(db.Text)
     precinct_id = db.Column(db.Integer)
-    voter_id = db.Column(db.Integer)
+    voter_id = db.Column(db.Integer, primary_key=True)
     reg_date = db.Column(db.Text)
-    active = db.Column(db.Boolean)
-    comment = db.Column(db.Text)
+    permanent_absentee = db.Column(db.Text)
+    status = db.Column(db.Text)
+    uocava = db.Column(db.Text)
+    party = db.Column(db.Text)
 
     def __init__(self, d=None):
         if d:
             self.last = d['last'].upper()
             self.name_metaphone = MatchLib.get_single(self.last)
             self.first = d['first'].upper()
-            self.email = d['email']
-            self.email_metaphone = MatchLib.get_single(self.email)
 
     def __str__(self):
         return str(self.person_name)
@@ -72,21 +66,53 @@ class Contact(TimestampMixin, db.Model):
                 'city': self.city,
                 'zipcode': self.zipcode
             },
-            'contact_info': {
-                'email': self.email,
-                'phone1': self.phone1,
-                'phone2': self.phone2,
-                'email_metaphone': self.email_metaphone
-            },
             'voter_info': {
                 'voter_id': self.voter_id,
                 'precinct_id': self.precinct_id,
                 'birth_year': self.birth_year,
                 'gender': self.gender,
-                'reg_date': self.reg_date
+                'reg_date': self.reg_date,
+                'permanent_absentee': self.permanent_absentee,
+                'status': self.status,
+                'uocava': self.uocava,
+                'party': self.party
             },
-            'record_info': {
-                'created_at': self.created_at,
-                'updated_at': self.updated_at
-            }
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
         }
+
+    @staticmethod
+    def by_fuzzy_name_and_address(pn, addr):
+        return Voter.query.filter(
+            (Voter.street_metaphone == addr.metaphone) &
+            (Voter.street_name.like(addr.street_name[0] + '%')) &
+            (Voter.house_number.between(addr.block[0], addr.block[1])) &
+            (Voter.name_metaphone == pn.metaphone) &
+            (Voter.last.like(pn.last[0] + '%'))
+        ).all()
+
+    @staticmethod
+    def by_fuzzy_name(pn):
+        return Voter.query.filter(
+            (Voter.name_metaphone == pn.metaphone) &
+            (Voter.last.like(pn.last[0] + '%')) &
+            (Voter.first.like(pn.first[0] + '%'))
+        ).all()
+
+    @staticmethod
+    def fuzzy_lookup(params):
+        from models.person_name import PersonName
+        from models.address import Address
+
+        pn = PersonName(params)
+        if 'address' in params and params['address'] != '':
+            addr = Address(params)
+            matches = Voter.by_fuzzy_name_and_address(pn, addr)
+            if matches:
+                return matches
+
+        candidates = Voter.by_fuzzy_name(pn)
+        candidates_by_name = {str(candidate): candidate for candidate in candidates}
+        names = [str(candidate) for candidate in candidates]
+        matches = MatchLib.get_best_partials(str(pn), names, 75)
+        return [candidates_by_name[match] for match in matches]

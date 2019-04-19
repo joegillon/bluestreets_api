@@ -242,3 +242,95 @@ def precincts():
             streets=streets,
             title='Assign Precincts'
         )
+
+
+@con.route('/voter_lookup', methods=['POST'])
+def voter_lookup():
+    from models.voter import Voter
+
+    contact = json.loads(request.form['params'])
+    try:
+        voters = Voter.fuzzy_lookup(contact)
+        candidates = [{
+            'name': {
+                'last': voter.last,
+                'first': voter.first,
+                'middle': voter.middle,
+                'suffix': voter.suffix
+            },
+            'address': {
+                'house_number': voter.house_number,
+                'pre_direction': voter.pre_direction,
+                'street_name': voter.street_name,
+                'street_type': voter.street_type,
+                'suf_direction': voter.suf_direction,
+                'unit': voter.unit,
+                'city': voter.city,
+                'zipcode': voter.zipcode
+            },
+            'voter_info': {
+                'voter_id': voter.voter_id,
+                'precinct_id': voter.precinct_id,
+                'birth_year': voter.birth_year,
+                'gender': voter.gender,
+                'reg_date': voter.reg_date,
+                'permanent_absentee': voter.permanent_absentee,
+                'status': voter.status,
+                'uocava': voter.uocava,
+                'party': voter.party
+            },
+            'record_info': {
+                'created_at': voter.created_at,
+                'updated_at': voter.updated_at
+            }
+        } for voter in voters]
+        return jsonify(candidates=candidates)
+    except Exception as ex:
+        return jsonify(error=str(ex))
+
+
+@con.route('/street_lookup', methods=['POST'])
+def street_lookup():
+    from models.address import str_parse
+    from utils.match import MatchLib
+
+    params = json.loads(request.form['params'])
+    addr = str_parse(params['address'])
+    addr['county_code'] = '81'  # TODO: get from cfg
+    addr['meta'] = Address.get_street_meta(addr['street_name'])
+    if params['city']:
+        addr['city'] = params['city']
+    if params['zipcode']:
+        addr['zipcode'] = params['zipcode']
+
+    dao = Dao()
+
+    try:
+        candidates = turf_dao.street_fuzzy_lookup(dao, addr)
+        matches = MatchLib.get_best_matches(addr['street_name'], [c['street_name'] for c in candidates], 80)
+        matches = [match[0] for match in matches]
+        candidates = [candidate for candidate in candidates if candidate['street_name'] in matches]
+        candidates = [{
+            'address': {
+                'house_num_low': candidate['house_num_low'],
+                'house_num_high': candidate['house_num_high'],
+                'odd_even': candidate['odd_even'],
+                'pre_direction': candidate['pre_direction'],
+                'street_name': candidate['street_name'],
+                'street_type': candidate['street_type'],
+                'suf_direction': candidate['suf_direction'],
+                'unit_low': candidate['ext_low'],
+                'unit_high': candidate['ext_high'],
+                'city': candidate['city'],
+                'zipcode': candidate['zipcode']
+            },
+            'voter_info': {
+                'precinct_id': candidate['precinct_id']
+            }
+        } for candidate in candidates]
+
+        return jsonify(candidates=candidates)
+    except Exception as ex:
+        return jsonify(error=str(ex))
+
+

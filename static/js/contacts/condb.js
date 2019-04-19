@@ -81,6 +81,10 @@ function addDisplay2Contacts() {
     var params = {
       name: {whole_name: wholeName(contact.name)},
       address: {whole_addr: wholeAddress(contact.address)},
+      contact_info: {
+        phone1: phone_prettify(contact.contact_info.phone1),
+        phone2: phone_prettify(contact.contact_info.phone2)
+      },
       voter_info: {
         precinct_name: "",
         congress: "",

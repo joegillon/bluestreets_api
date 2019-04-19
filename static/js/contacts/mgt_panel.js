@@ -1,6 +1,3 @@
-/* conMgtPanel: conGridPanel, conDetailPanel */
-
-
 var mgtToolbarCols = [
   {
     view: "icon",
@@ -159,15 +156,35 @@ var conGridToolbarCtlr = {
   }
 };
 
-var mgtFormToolbarCols = [
+var mgtGridCols = [
   {
-    view: "button",
-    type: "icon",
-    icon: "envelope",
-    width: 25,
-    tooltip: "Email Contact",
-    click: "conFormToolbarCtlr.email();"
+    id: "pct",
+    template: "#voter_info.precinct_name#",
+    header: "Precinct",
+    width: 210,
+    sort: sortByPrecinctName
   },
+  {
+    template: "#voter_info.congress#",
+    header: "US",
+    width: 60,
+    sort: sortByCongressionalDistrict
+  },
+  {
+    template: "#voter_info.senate#",
+    header: {text: "State Senate", css: "multiline", height: 40},
+    width: 60,
+    sort: sortBySenateDistrict
+  },
+  {
+    template: "#voter_info.house#",
+    header: {text: "State House", css: "multiline"},
+    width: 60,
+    sort: sortByHouseDistrict
+  }
+];
+
+var mgtFormToolbarCols = [
   {
     view: "button",
     type: "icon",
@@ -301,11 +318,13 @@ var conMgtPanelCtlr = {
 
     // Build conGridPanel
     conGridToolbar.cols = conGridToolbar.cols.concat(mgtToolbarCols);
+    conGrid.columns = conGrid.columns.concat(mgtGridCols);
     this.buildConGridCtlr();
 
     // Build conDetailPanel
     conForm.elements = conForm.elements.concat(mgtFormRow);
     insertArrayAt(conFormToolbar.elements, 1, mgtFormToolbarCols);
+    this.buildConFormCtlr();
 
     // Build conMgtUI
     var gridView = {
@@ -424,6 +443,23 @@ var conMgtPanelCtlr = {
       });
 
       csvExportTableCtlr.export(filename, data, exportColumns, exportIgnore);
+    }
+  },
+
+  buildConFormCtlr: function() {
+    conFormCtlr.loadMemberships = function(contactId) {
+      $$("groupList").clearAll();
+      $$("groupList").parse(
+        membershipsCollection.find({contact_id: contactId})
+      )
+    };
+
+    conFormCtlr.loadContact = function(contactId) {
+      this.loadMemberships(contactId);
+      var contact = contactsCollection.findOne({id: contactId});
+      this.frm.setValues(contact, true);
+      this.locationReadOnly(true);
+      conMatchGridCtlr.config("C");
     }
   }
 

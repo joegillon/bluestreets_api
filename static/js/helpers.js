@@ -34,6 +34,7 @@ function phone_prettify(phone) {
 }
 
 function phone_uglify(phone) {
+  if (!phone) return "";
   return phone.replace(/\D/g, '');
 }
 
@@ -315,4 +316,8 @@ function isValidByr(value) {
 
 function insertArrayAt(array, index, arrayToInsert) {
   Array.prototype.splice.apply(array, [index, 0].concat(arrayToInsert));
+}
+
+function jsonCopy(src) {
+  return JSON.parse(JSON.stringify(src));
 }

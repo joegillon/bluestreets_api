@@ -65,31 +65,6 @@ var conGrid = {
       template: '#address.whole_addr#',
       header: 'Address',
       width: 250
-    },
-    {
-      id: "pct",
-      template: "#voter_info.precinct_name#",
-      header: "Precinct",
-      width: 210,
-      sort: sortByPrecinctName
-    },
-    {
-      template: "#voter_info.congress#",
-      header: "US",
-      width: 60,
-      sort: sortByCongressionalDistrict
-    },
-    {
-      template: "#voter_info.senate#",
-      header: {text: "State Senate", css: "multiline", height: 40},
-      width: 60,
-      sort: sortBySenateDistrict
-    },
-    {
-      template: "#voter_info.house#",
-      header: {text: "State House", css: "multiline"},
-      width: 60,
-      sort: sortByHouseDistrict
     }
   ],
   on: {
