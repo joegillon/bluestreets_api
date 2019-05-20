@@ -87,35 +87,27 @@ var conMatchToolbarCtlr = {
   },
 
   streetMatch: function () {
+    let values = conFormCtlr.getValues();
+    if (values.display_addr == "") {
+      webix.message({type: "error", text: "No address to lookup!"});
+      return;
+    }
+
     conMatchGridCtlr.clear();
-    var values = conFormCtlr.getValues();
-    if (values.display_addr == "") return;
 
-    var addr = parseAddress.parseLocation(values.display_addr);
-    var streetName = addr.street;
-    var house_num = parseInt(addr.number);
+    let street = new Street(values);
 
-    if (ordinalStreets[streetName]) {
-      streetName = ordinalStreets[streetName];
-    }
-
-    var compName = "";
-    streetName.split("").forEach(function(c) {
-      compName += isDigit(c) ? digitMappings[c] : c;
-    });
-    var metaName = double_metaphone(compName)[0];
-
-    var cond = {
-      street_metaphone: metaName
+    let cond = {
+      street_metaphone: street.metaphone
     };
-    if (addr.hasOwnProperty("number")) {
-      cond.house_num_low = {"$lte": house_num};
-      cond.house_num_high = {"$gte": house_num}
+    if (values.house_number) {
+      cond.house_num_low = {lte: values.house_number};
+      cond.house_num_high = {gte: values.house_number}
     }
-    var matches = streetsCollection.find(cond);
+    let matches = db.streets(cond).get();
 
     matches = matches.filter(function(match) {
-      return match.street_name[0] == streetName[0];
+      return match.street_name[0] == street.name[0];
     });
 
     if (matches.length > 0) {
@@ -208,7 +200,7 @@ var conVGrid = {
       header: "Reg Date",
       template: "#reg_date#",
       adjust: "data",
-      tooltip: "#precinct_name#"
+      tooltip: "#display_pct#"
     }
   ],
   on: {
@@ -229,7 +221,7 @@ var conSGrid = {
       header: 'Street',
       template: "#display#",
       adjust: "data",
-      tooltip: "#pct_name#"
+      tooltip: "#city# #zipcode#"
     },
     {
       header: "Low",
@@ -253,7 +245,7 @@ var conSGrid = {
     },
     {
       header: "Side",
-      template: "#odd_even#",
+      template: "#street_side#",
       adjust: "header"
     }
   ],

@@ -382,19 +382,22 @@ var conFormCtlr = {
   },
 
   loadStreet: function(street) {
-    var vals = {
-      address: {
-        display: rebuildAddress(
-          this.frm.elements["display_address"].getValue(),
-          street.display
-        ),
-        city: street.city,
-        zipcode: street.zipcode
-      },
-      voter_info: {
-        precinct_id: street.precinct_id,
-        precinct_name: street.pct_name
-      }
+    let curVals = this.getValues();
+    let display_addr = curVals.house_number + " " + street.display;
+    if (curVals.unit) display_addr += " UNIT " + curVals.unit;
+    let vals = {
+      display_addr: display_addr,
+      street_prefix: street.street_prefix,
+      street_name: street.street_name,
+      street_type: street.street_type,
+      street_suffix: street.street_suffix,
+      unit: curVals.unit,
+      street_side: street.street_side,
+      street_metaphone: street.street_metaphone,
+      city: street.city,
+      zipcode: street.zipcode,
+      precinct_id: street.precinct_id,
+      display_pct: db.pcts({id: street.precinct_id}).first().display
     };
     this.frm.setValues(vals, true);
   },
