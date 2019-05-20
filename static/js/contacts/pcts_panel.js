@@ -1,82 +1,59 @@
 /* conPctPanel: conGridPanel, conDetailPanel */
 
-/*=====================================================================
-Database
-=====================================================================*/
-var contactsCollection;
-var streetsCollection;
-var zipcodeOptions;
-var cityOptions;
-var ordinalStreets;
-var digitMappings;
+/*=============================================
+Contact Precinct Panel
+=============================================*/
+const gridView = {
+  id: "gridView",
+  rows: [conGridPanel],
+  autowidth: true
+};
 
-/*=====================================================================
-Contact Precinct UI Controller
-=====================================================================*/
-var conPctUICtlr = {
+const detailView = {
+  id: "detailView",
+  rows: [conDetailPanel],
+  autowidth: true
+};
+
+const conPctPanel = {
+  container: "content_container",
+  autowidth: true,
+  rows: [
+    {
+      view: "segmented",
+      id: "conPctPanel",
+      value: "gridView",
+      multiview: true,
+      options: []
+    },
+    {
+      cells: [gridView, detailView]
+    }
+  ]
+};
+
+const conPctPanelCtlr = {
   init: function() {
     this.buildDB();
-    this.buildUI();
-
-    conGridPanelCtlr.init();
-    conDetailPanelCtlr.init();
-
-    // Need this because form onblur events occur prior to the clear
-    // button click.
-    webix.attachEvent("onFocusChange", function(cur_view) {
-      if (cur_view === null) return;
-      if (cur_view.config.id == "conFormClearBtn") {
-        conFormCtlr.clear();
-      }
-    })
-  },
-
-  buildDB: function() {
-    build_streets_db();
-    build_contacts_db();
-  },
-
-  buildUI: function() {
-
     this.buildConFormCtlr();
 
     webix.ui(coaPopup);
+    webix.ui(conPctPanel);
 
-    var gridView = {
-      id: "gridView",
-      rows: [conGridPanel],
-      autowidth: true
-    };
-
-    var detailView = {
-      id: "detailView",
-      rows: [conDetailPanel],
-      autowidth: true
-    };
-
-    var conMgtUI = {
-      container: "content_container",
-      autowidth: true,
-      rows: [
-        {
-          view: "segmented",
-          id: "conMgtUI",
-          value: "gridView",
-          multiview: true,
-          options: [],
-        },
-        {
-          cells: [gridView, detailView]
-        }
-      ]
-    };
-
-    webix.ui(conMgtUI);
+    conGridPanelCtlr.init();
+    conDetailPanelCtlr.init();
   },
 
-  buildConFormCtlr: function() {
+  buildDB: function() {
+    buildPrecinctsCollection();
+    buildStreetsCollection();
+    buildCityZips();
+    buildContactsCollection();
+  },
+
+   buildConFormCtlr: function() {
     conFormCtlr.loadContact = function(contactId) {
-      var contact = contactsCollection.findOne({id: contactId});
+      const contact = db.contacts({id: contactId}).first();
       this.frm.setValues(contact, true);
       $$("chkKeep").setValue(false);
       this.locationReadOnly(true);
@@ -84,6 +61,5 @@ var conPctUICtlr = {
       conMatchToolbarCtlr.voterMatch();
     }
   }
-
 };
 

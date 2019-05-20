@@ -85,7 +85,7 @@ var conFormToolbarCtlr = {
     if (!conFormCtlr.validate()) return;
     var vals = conFormCtlr.getValues({hidden: true});
 
-    if (contactsCollection.findOne({id: vals.id}) === undefined)
+    if (db.contacts({id: {has: vals.id}}))
       vals.id = -1;
       
     //noinspection JSUnresolvedVariable,JSUnresolvedFunction
@@ -110,7 +110,6 @@ Contact Form
 var conForm = {
   view: "form",
   id: "conForm",
-  complexData: true,
   tooltip: true,
   elements: [
     {
@@ -124,7 +123,7 @@ var conForm = {
           view: "text",
           type: "email",
           label: "Email",
-          name: "contact_info.email",
+          name: "email",
           width: 200,
           invalidMessage: "Invalid email address!",
           on: {
@@ -136,7 +135,7 @@ var conForm = {
         {
           view: "text",
           label: "Phone 1",
-          name: "contact_info.phone1",
+          name: "phone1",
           type: "tel",
           attributes: {pattern: "[0-9]{3}-[0-9]{3}-[0-9]{4}"},
           width: 130,
@@ -153,7 +152,7 @@ var conForm = {
         {
           view: "text",
           label: "Phone 2",
-          name: "contact_info.phone2",
+          name: "phone2",
           type: "tel",
           attributes: {pattern: "[0-9]{3}-[0-9]{3}-[0-9]{4}"},
           width: 130,
@@ -174,7 +173,7 @@ var conForm = {
         {
           view: "text",
           label: "Last",
-          name: "name.last",
+          name: "last_name",
           required: true,
           invalidMessage: "Last name is required!",
           on: {
@@ -189,7 +188,7 @@ var conForm = {
         {
           view: "text",
           label: "First",
-          name: "name.first",
+          name: "first_name",
           width: 180,
           required: true,
           invalidMessage: "First name is required!",
@@ -206,7 +205,7 @@ var conForm = {
         {
           view: "text",
           label: "Middle",
-          name: "name.middle",
+          name: "middle_name",
           width: 180,
           invalidMessage: "Invalid middle name characters!",
           on: {
@@ -218,7 +217,7 @@ var conForm = {
         {
           view: "text",
           label: "Suffix",
-          name: "name.suffix",
+          name: "name_suffix",
           width: 60,
           on: {
             onTimedKeyPress: function() {
@@ -229,7 +228,7 @@ var conForm = {
         {
           view: "text",
           label: "Nickname",
-          name: "name.nickname",
+          name: "nickname",
           invalidMessage: "Invalid nickname characters!",
           on: {
             onKeyPress: function(code) {
@@ -244,7 +243,7 @@ var conForm = {
         {
           view: "text",
           label: "Address",
-          name: "address.whole_addr",
+          name: "display_addr",
           width: 260,
           invalidMessage: "Address does not exist!",
           on: {
@@ -255,14 +254,14 @@ var conForm = {
         {
           view: "select",
           label: "City",
-          name: "address.city",
+          name: "city",
           width: 100,
           options: []
         },
         {
           view: "select",
           label: "Zip",
-          name: "address.zipcode",
+          name: "zipcode",
           width: 70,
           options: []
         },
@@ -278,7 +277,7 @@ var conForm = {
         {
           view: "text",
           label: "Precinct",
-          name: "voter_info.precinct_name",
+          name: "display_pct",
           readonly: true
         }
       ]
@@ -288,7 +287,7 @@ var conForm = {
         {
           view: "text",
           label: "Last Modified",
-          name: "record_info.updated_at",
+          name: "updated_at",
           readonly: true
         }
       ]
@@ -296,19 +295,19 @@ var conForm = {
   ],
   rules: {
     "contact_info.email": function(value, values, name) {
-      return isEmail(values.contact_info.email);
+      return isEmail(values.email);
     },
     "contact_info.phone1": function(value, values, name) {
-      return isPhone(values.contact_info.phone1);
+      return isPhone(values.phone1);
     },
     "contact_info.phone2": function(value, values, name) {
-      return isPhone(values.contact_info.phone2);
+      return isPhone(values.phone2);
     },
-    "address.whole_addr": function(value, values, name) {
+    "address.display": function(value, values, name) {
       return value == "" || isValidAddress(
-        values.address.whole_addr,
-        this.elements["address.city"].getValue(),
-        this.elements["address.zipcode"].getValue()
+        values.display_addr,
+        this.elements["city"].getValue(),
+        this.elements["zipcode"].getValue()
       );
     }
   },
@@ -323,10 +322,10 @@ var conFormCtlr = {
 
   init: function() {
     this.frm = $$("conForm");
-    this.frm.elements["address.city"].define("options", cityOptions);
-    this.frm.elements["address.city"].refresh();
-    this.frm.elements["address.zipcode"].define("options", zipcodeOptions);
-    this.frm.elements["address.zipcode"].refresh();
+    this.frm.elements["city"].define("options", db.cities);
+    this.frm.elements["city"].refresh();
+    this.frm.elements["zipcode"].define("options", db.zipcodes);
+    this.frm.elements["zipcode"].refresh();
   },
 
   // This func is called by the global event handler in the mgt panel
@@ -339,7 +338,7 @@ var conFormCtlr = {
 
   locationReadOnly: function(value) {
     var theForm = this.frm;
-    ["address.whole_addr", "address.city", "address.zipcode"].forEach(function(ctl) {
+    ["display_addr", "city", "zipcode"].forEach(function(ctl) {
       if (value) {
         theForm.elements[ctl].disable();
       } else {
@@ -356,23 +355,23 @@ var conFormCtlr = {
     }
     const contact = jsonCopy(voter);
     if ($$("chkKeep").getValue() == 1) {
-      var street = new Street(this.getValues().address);
-      var matches = street.getMatches(streetsCollection);
-      if (matches.length != 1) {
+      var addr = new Address(this.getValues());
+      var street_matches = addr.getMatches(db.streets);
+      if (street_matches.length != 1) {
         webix.message({type: "error", text: "Unable to resolve contact address to a precinct!"});
         return;
       }
-      contact.address.city = matches[0].city;
-      contact.address.pre_direction = matches[0].pre_direction;
-      contact.address.street_name = matches[0].street_name;
-      contact.address.street_type = matches[0].street_type;
-      contact.address.suf_direction = matches[0].suf_direction;
-      contact.address.whole_addr = matches[0].display;
-      contact.address.zipcode = matches[0].zipcode;
-      if (contact.voter_info.precinct_id != matches[0].precinct_id)
-        contact.voter_info.voter_id = contact.voter_info.voter_id * -1;
-      contact.voter_info.precinct_id = matches[0].precinct_id;
-      contact.voter_info.precinct_name = matches[0].pct_name;
+      contact.city = street_matches[0].city;
+      contact.street_prefix = street_matches[0].street_prefix;
+      contact.street_name = street_matches[0].street_name;
+      contact.street_type = street_matches[0].street_type;
+      contact.street_suffix = street_matches[0].street_suffix;
+      contact.display_addr = street_matches[0].display;
+      contact.zipcode = street_matches[0].zipcode;
+      if (contact.precinct_id != street_matches[0].precinct_id)
+        contact.voter_id = contact.voter_id * -1;
+      contact.precinct_id = street_matches[0].precinct_id;
+      contact.display_pct = db.pcts({id: street_matches[0].precinct_id}).first().display;
     }
 
     this.frm.setValues(contact, true);
@@ -385,8 +384,8 @@ var conFormCtlr = {
   loadStreet: function(street) {
     var vals = {
       address: {
-        whole_addr: rebuildAddress(
-          this.frm.elements["address.whole_addr"].getValue(),
+        display: rebuildAddress(
+          this.frm.elements["display_address"].getValue(),
           street.display
         ),
         city: street.city,
@@ -406,8 +405,8 @@ var conFormCtlr = {
 
   getValues: function() {
     var vals = this.frm.getValues();
-    vals.contact_info.phone1 = phone_uglify(vals.contact_info.phone1);
-    vals.contact_info.phone2 = phone_uglify(vals.contact_info.phone2);
+    vals.phone1 = phone_uglify(vals.phone1);
+    vals.phone2 = phone_uglify(vals.phone2);
     return vals;
   }
 

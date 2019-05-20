@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>JS Test</title>
+  <script src="{{ url_for('static', filename='js/helpers.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/lib/double-metaphone.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/lib/parse-address.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/lib/fuzzball.umd.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/models/street.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/models/address.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/models/block.js') }}"></script>
+  <script>
+    let street1 = new Street("N Fourth Av, Ann Arbor 48103");
+    let street2 = new Street("North Main Street SW");
+    let addr1 = new Address("110 N Fourth Av #3, Ann Arbor 48103");
+  </script>
+</head>
+<body>
+JS Test
+</body>
+</html>

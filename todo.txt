@@ -1,3 +1,19 @@
 Environment vars not working
 Need logging?
 SSL/https
+
+authorization
+objects:
+	name
+	address
+		street
+	contact_info
+	voter_info
+saving pct assignments to DB
+saving COA to DB
+collections across page changes
+email option on pct assign? 
+	standard text?
+on pct assign page:
+	contact_info readonly?
+on demand dup check

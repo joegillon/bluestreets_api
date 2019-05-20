@@ -1,0 +1,62 @@
+PersonName
+	last
+	first
+	middle
+	suffix
+	nickname
+	alias
+	*metaphone
+	
+Person
+	PersonName
+	DOB
+	Gender
+
+Street
+	prefix
+	name
+	type
+	suffix
+	*metaphone
+	
+Address
+	number
+	Street
+	unit
+	city
+	zipcode
+	precinct_id
+	
+ContactInfo
+	email
+	phone1
+	phone2
+	
+VoterInfo
+	voter_id
+	reg_date
+	
+Contact
+	Person
+	Address
+	ContactInfo
+	VoterInfo
+	
+Precinct
+	jurisdiction
+	ward
+	pct
+	state_house
+	state_senate
+	congress
+	
+Group
+	name
+	code
+	description
+	
+GroupMember
+	group_id
+	contact_id
+	role
+	notes

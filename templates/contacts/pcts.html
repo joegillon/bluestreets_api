@@ -8,8 +8,9 @@
   {{ super() }}
 
   <script>
-    var contactRecords = {{ contacts|tojson }};
-    var streetRecords = {{ streets|tojson }};
+    const CONTACT_REX = {{ contacts|tojson }};
+    const STREET_REX = {{ streets|tojson }};
+    const PCT_REX = {{ precincts|tojson }};
   </script>
 
   <script src="{{ url_for('static', filename='js/lib/double-metaphone.js') }}"></script>
@@ -22,13 +23,14 @@
   <script src="{{ url_for('static', filename='js/contacts/detail_panel.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/coa_popup.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/pcts_panel.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/streets/model.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/models/street.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/models/address.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/models/block.js') }}"></script>
 
   <script type="text/javascript" charset="utf-8">
 
     webix.ready(function() {
-
-      conPctUICtlr.init();
+      conPctPanelCtlr.init();
   });
 
   </script>

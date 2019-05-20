@@ -55,14 +55,14 @@ var conGrid = {
     },
     {
       id: "name",
-      template: '#name.whole_name#',
+      template: '#display_name#',
       header: 'Name',
       width: 300,
       sort: sortByWholeName
     },
     {
       id: "address",
-      template: '#address.whole_addr#',
+      template: '#display_addr#',
       header: 'Address',
       width: 250
     }
@@ -82,7 +82,7 @@ var conGridCtlr = {
 
   init: function() {
     this.grid = $$("conGrid");
-    this.recordSet = contactsCollection.find({}, {$orderBy: {name: {whole_name: 1}}});
+    this.recordSet = db.contacts().order("display_name").get();
     this.load(this.recordSet);
     this.grid.adjust();
   },
@@ -99,7 +99,7 @@ var conGridCtlr = {
 
   filter: function(value) {
     this.grid.filter(function(obj) {
-      return obj.name.whole_name.toLowerCase().indexOf(value.toLowerCase()) == 0;
+      return obj.display_name.toLowerCase().indexOf(value.toLowerCase()) == 0;
     })
   },
 

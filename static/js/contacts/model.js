@@ -29,7 +29,7 @@ function Street(arg) {
   }
 
   this.prefix = arg.prefix;
-  this.name = (ordinal_streets[arg.name]) ?
+  this.name = (ordinalStreets[arg.name]) ?
     ordinal_streets[arg.name] : arg.name;
   this.type = arg.type;
   this.suffix = arg.suffix;

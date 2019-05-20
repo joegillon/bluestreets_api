@@ -5,6 +5,7 @@ from models.group import Group
 from models.membership import Membership
 from models.street import Street
 from models.jurisdiction import Jurisdiction
+from models.precinct import Precinct
 
 con = Blueprint('con', __name__, url_prefix='/con')
 
@@ -218,28 +219,22 @@ def get_address(dup):
 @con.route('/precincts', methods=['GET', 'POST'])
 def precincts():
     if request.method == 'GET':
-        rex = Contact.query.filter((Contact.precinct_id.is_(None))) \
-            .order_by(Contact.last, Contact.first, Contact.middle).all()
+        rex = Contact.get_missing_pct()
         if not rex:
             return jsonify(msg='No contacts without precinct!')
         contacts = [rec.serialize() for rec in rex]
 
-        rex = Jurisdiction.query.all()
-        jurisdictions = {rec.code: rec.name for rec in rex}
+        rex = Precinct.query.all()
+        pcts = [rec.serialize() for rec in rex]
 
-        rex = Street.query.filter_by(county_code=81).all()
+        rex = Street.query.all()
         streets = [rec.serialize() for rec in rex]
-        for street in streets:
-            street['pct_name'] = '%s %s %s' % (
-                jurisdictions[street['jurisdiction_code']],
-                street['ward'],
-                street['precinct']
-            )
 
         return render_template(
             'contacts/pcts.html',
             contacts=contacts,
             streets=streets,
+            precincts=pcts,
             title='Assign Precincts'
         )
 
@@ -251,39 +246,7 @@ def voter_lookup():
     contact = json.loads(request.form['params'])
     try:
         voters = Voter.fuzzy_lookup(contact)
-        candidates = [{
-            'name': {
-                'last': voter.last,
-                'first': voter.first,
-                'middle': voter.middle,
-                'suffix': voter.suffix
-            },
-            'address': {
-                'house_number': voter.house_number,
-                'pre_direction': voter.pre_direction,
-                'street_name': voter.street_name,
-                'street_type': voter.street_type,
-                'suf_direction': voter.suf_direction,
-                'unit': voter.unit,
-                'city': voter.city,
-                'zipcode': voter.zipcode
-            },
-            'voter_info': {
-                'voter_id': voter.voter_id,
-                'precinct_id': voter.precinct_id,
-                'birth_year': voter.birth_year,
-                'gender': voter.gender,
-                'reg_date': voter.reg_date,
-                'permanent_absentee': voter.permanent_absentee,
-                'status': voter.status,
-                'uocava': voter.uocava,
-                'party': voter.party
-            },
-            'record_info': {
-                'created_at': voter.created_at,
-                'updated_at': voter.updated_at
-            }
-        } for voter in voters]
+        candidates = [voter.serialize() for voter in voters]
         return jsonify(candidates=candidates)
     except Exception as ex:
         return jsonify(error=str(ex))

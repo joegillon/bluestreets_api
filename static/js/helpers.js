@@ -117,13 +117,13 @@ function ajaxSyncGet(url, params, result) {
   });
 }
 
-function wholeName(names) {
-  var result = names.last + ", " + names.first;
-  if (names.middle) {
-    result += " " + names.middle;
+function getDisplayName(d) {
+  var result = d.last_name + ", " + d.first_name;
+  if (d.middle_name) {
+    result += " " + d.middle_name;
   }
-  if (names.suffix) {
-    result += ", " + names.suffix;
+  if (d.name_suffix) {
+    result += ", " + d.name_suffix;
   }
   return result;
 }
@@ -138,15 +138,15 @@ function commonName(names) {
   return result;
 }
 
-function wholeAddress(addr) {
-  if (!addr.street_name) return "";
+function getDisplayAddress(d) {
+  if (!d.street_name) return "";
   var result = "";
-  if (addr.house_number) result += addr.house_number + " ";
-  if (addr.pre_direction) result += addr.pre_direction + " ";
-  result += addr.street_name + " ";
-  if (addr.street_type) result += addr.street_type + " ";
-  if (addr.suf_direction) result += addr.suf_direction + " ";
-  if (addr.unit) result += "Unit " + addr.unit;
+  if (d.house_number) result += d.house_number + " ";
+  if (d.street_prefix) result += d.street_prefix + " ";
+  result += d.street_name + " ";
+  if (d.street_type) result += d.street_type + " ";
+  if (d.street_suffix) result += d.street_suffix + " ";
+  if (d.unit) result += "Unit " + d.unit;
   return result.trim();
 }
 
@@ -321,3 +321,7 @@ function insertArrayAt(array, index, arrayToInsert) {
 function jsonCopy(src) {
   return JSON.parse(JSON.stringify(src));
 }
+
+String.prototype.splice = function(idx, rem, str) {
+    return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
+};

@@ -98,8 +98,8 @@ var coaFormCtlr = {
 
   init: function() {
     this.frm = $$("coaForm");
-    this.frm.elements["zipcode"].define("suggest", zipcodeOptions);
-    this.frm.elements["city"].define("suggest", cityOptions);
+    this.frm.elements["zipcode"].define("suggest", db.zipcodes);
+    this.frm.elements["city"].define("suggest", db.cities);
   },
 
   clear: function() {
@@ -116,9 +116,7 @@ var coaFormCtlr = {
 
   setCity: function(zipcode) {
     if (zipcode == "") return;
-    var city = streetsCollection.findOne(
-      {zipcode: zipcode}
-    ).city;
+    let city = db.streets(zipcode == zipcode).first();
     this.frm.elements.city.setValue(city);
     this.setStreets(zipcode);
     this.set_focus("street");
@@ -126,16 +124,12 @@ var coaFormCtlr = {
 
   setStreets: function(value) {
     if (value == "") return;
-    var cond = {zipcode: value};
-    if (!isDigit(value[0])) {
-      cond = {city: value};
+    let streets = [];
+    if (isDigit(value[0])) {
+      streets = db.streets(zipcode == value).distinct("display").order("display");
+    } else {
+      streets = db.streets(city == value).distinct("display").order("display");
     }
-    var rex = streetsCollection.find(cond);
-    rex = rex.map(function(rec) {
-      return rec.display;
-    });
-    var s = new Set(rex);
-    var streets = Array.from(s).sort();;
     this.frm.elements.street.define("suggest", streets);
     this.frm.elements.street.refresh();
     this.set_focus("street");
@@ -149,13 +143,13 @@ var coaFormCtlr = {
 
     var house_number = parseInt(vals.house_number);
     var odd_even = (house_number % 2 == 0) ? "E": "O";
-    var p = streetsCollection.findOne({
+    let p = db.streets({
       zipcode: vals.zipcode,
       display: vals.street,
       house_num_low: {'$lte': house_number},
       house_num_high: {'$gte': house_number},
       odd_even: {'$in': ["B", odd_even]}
-    });
+    }).first();
     if (p)
     {
       this.frm.elements.precinct.setValue(p.pct_name);

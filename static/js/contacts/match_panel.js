@@ -58,17 +58,17 @@ var conMatchToolbarCtlr = {
 
   voterMatch: function () {
     var values = conFormCtlr.getValues();
-    if (values.last == "" || values.first == "") {
+    if (values.last_name == "" || values.first_name == "") {
       webix.message({type: "error", text: "Must have at least first and last name!"});
       return;
     }
     var params = {
-      last: values.name.last,
-      first: values.name.first,
-      middle: values.name.middle,
-      address: values.address.whole_addr,
-      city: values.address.city,
-      zipcode: values.address.zipcode
+      last: values.last_name,
+      first: values.first_name,
+      middle: values.middle_name,
+      address: values.display_addr,
+      city: values.city,
+      zipcode: values.zipcode
     };
 
     conMatchGridCtlr.config("V");
@@ -78,12 +78,9 @@ var conMatchToolbarCtlr = {
 
     ajaxDao.post(url, params, function(data) {
       data["candidates"].forEach(function(candidate) {
-        var street = streetsCollection.findOne(
-          {precinct_id: candidate.voter_info.precinct_id}
-        );
-        candidate.name.whole_name = wholeName(candidate.name);
-        candidate.address.whole_addr = wholeAddress(candidate.address);
-        candidate.voter_info.precinct_name = street.pct_name;
+        candidate.display_name = getDisplayName(candidate);
+        candidate.display_addr = getDisplayAddress(candidate);
+        candidate.display_pct = db.pcts({id: candidate.precinct_id}).first().display;
       });
       conMatchGridCtlr.load(data["candidates"]);
     });
@@ -92,9 +89,9 @@ var conMatchToolbarCtlr = {
   streetMatch: function () {
     conMatchGridCtlr.clear();
     var values = conFormCtlr.getValues();
-    if (values.address.whole_addr == "") return;
+    if (values.display_addr == "") return;
 
-    var addr = parseAddress.parseLocation(values.address.whole_addr);
+    var addr = parseAddress.parseLocation(values.display_addr);
     var streetName = addr.street;
     var house_num = parseInt(addr.number);
 
@@ -141,17 +138,17 @@ var conCGrid = {
   columns: [
     {
       header: "Name",
-      template: "#name.whole_name#",
+      template: "#name.display#",
       adjust: "data",
       fillspace: true,
-      tooltip: "#name.whole_name#"
+      tooltip: "#name.display#"
     },
    {
       header: 'Address',
-      template: "#address.whole_addr#",
+      template: "#address.display#",
       adjust: "data",
       fillspace: true,
-      tooltip: "#address.whole_addr#, #address.city#"
+      tooltip: "#address.display#, #address.city#"
     },
     {
       header: 'Email',
@@ -197,21 +194,21 @@ var conVGrid = {
   columns: [
     {
       header: 'Name',
-      template: "#name.whole_name#",
+      template: "#display_name#",
       adjust: "data",
-      tooltip: "#voter_info.gender#, born #voter_info.birth_year#"
+      tooltip: "#gender#, born #birth_year#"
     },
    {
       header: 'Address',
-      template: "#address.whole_addr#",
+      template: "#display_addr#",
       adjust: "data",
-      tooltip: "#address.city# #address.zipcode#"
+      tooltip: "#city# #zipcode#"
     },
     {
       header: "Reg Date",
-      template: "#voter_info.reg_date#",
+      template: "#reg_date#",
       adjust: "data",
-      tooltip: "#voter_info.precinct_name#"
+      tooltip: "#precinct_name#"
     }
   ],
   on: {
@@ -312,25 +309,25 @@ var conMatchPanel = {
 var conMatchPanelCtlr = {
   panel: null,
 
-  ordinal_streets: {
-    'FIRST': '1ST', 'SECOND': '2ND', 'THIRD': '3RD',
-    'FOURTH': '4TH', 'FIFTH': '5TH', 'SIXTH': '6TH',
-    'SEVENTH': '7TH', 'EIGHTH': '8TH', 'NINTH': '9TH',
-    'TENTH': '10TH', 'ELEVENTH': '11TH', 'TWELFTH': '12TH'
-  },
-
-  digit_mappings: {
-    '0': 'ZERO',
-    '1': 'ONE',
-    '2': 'TWO',
-    '3': 'THREE',
-    '4': 'FOUR',
-    '5': 'FIVE',
-    '6': 'SIX',
-    '7': 'SEVEN',
-    '8': 'EIGHT',
-    '9': 'NINE'
-  },
+  //ordinal_streets: {
+  //  'FIRST': '1ST', 'SECOND': '2ND', 'THIRD': '3RD',
+  //  'FOURTH': '4TH', 'FIFTH': '5TH', 'SIXTH': '6TH',
+  //  'SEVENTH': '7TH', 'EIGHTH': '8TH', 'NINTH': '9TH',
+  //  'TENTH': '10TH', 'ELEVENTH': '11TH', 'TWELFTH': '12TH'
+  //},
+  //
+  //digit_mappings: {
+  //  '0': 'ZERO',
+  //  '1': 'ONE',
+  //  '2': 'TWO',
+  //  '3': 'THREE',
+  //  '4': 'FOUR',
+  //  '5': 'FIVE',
+  //  '6': 'SIX',
+  //  '7': 'SEVEN',
+  //  '8': 'EIGHT',
+  //  '9': 'NINE'
+  //},
 
   init: function() {
     this.panel = $$("conMatchPanel");
@@ -400,8 +397,8 @@ var conMatchPanelCtlr = {
   addressMatch: function(value) {
     if (value == "") return;
     var street_name = parseAddress.parseLocation(value).street;
-    if (this.ordinal_streets[street_name]) {
-      street_name = this.ordinal_streets[street_name];
+    if (this.ordinalStreets[street_name]) {
+      street_name = this.ordinalStreets[street_name];
     }
     var n = "";
     var digit_mappings = this.digit_mappings;
