@@ -29,6 +29,21 @@ class Address(object):
     def __str__(self):
         return '%s %s' % (str(self.house_number), self.get_street())
 
+    @staticmethod
+    def display_addr(d):
+        s = ''
+        if d['street_prefix']:
+            s += ' %s' % d['street_prefix']
+        s += ' %s' % d['street_name']
+        if d['street_type']:
+            s += ' %s' % d['street_type']
+        if d['street_suffix']:
+            s += ' %s' % d['street_suffix']
+        s = '%s %s' % (str(d['house_number']), s)
+        if d['unit']:
+            s += ' Unit ' + d['unit']
+        return s
+
     def get_street(self):
         s = ''
         if self.street_prefix:

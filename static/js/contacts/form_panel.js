@@ -338,14 +338,14 @@ var conFormCtlr = {
 
   locationReadOnly: function(value) {
     var theForm = this.frm;
-    ["display_addr", "city", "zipcode"].forEach(function(ctl) {
-      if (value) {
-        theForm.elements[ctl].disable();
-      } else {
-        theForm.elements[ctl].enable();
-      }
-      theForm.elements[ctl].refresh();
-    });
+//     ["display_addr", "city", "zipcode"].forEach(function(ctl) {
+//       if (value) {
+//         theForm.elements[ctl].disable();
+//       } else {
+//         theForm.elements[ctl].enable();
+//       }
+//       theForm.elements[ctl].refresh();
+//     });
   },
 
   loadVoter: function(voter) {

@@ -35,3 +35,7 @@ class Street(db.Model):
 
     def serialize(self):
         return {attr: getattr(self, attr) for attr in self.attrs()}
+
+    @staticmethod
+    def get_all():
+        return Street.query.all()

@@ -7,8 +7,9 @@
 {% block scripts %}
   {{ super() }}
   <script>
-    var dups = {{ dups|tojson }};
-    var streetRecords = {{ streets|tojson }};
+    const dups = {{ dups|tojson }};
+    const STREET_REX = {{ streets|tojson }};
+    const PCT_REX = {{ precincts|tojson }};
   </script>
   <script src="{{ url_for('static', filename='js/helpers.js') }}"></script>
   <script src="{{ url_for('static', filename='js/ajax_dao.js') }}"></script>
@@ -22,17 +23,8 @@
 
     webix.ready(function() {
 
-      webix.ui(conNameFormPopup);
-      webix.ui(coaPopup);
-
-      webix.ui({
-        container: "content_container",
-        rows: [conDupsPanel]
-      });
-
       conDupsPanelCtlr.init();
-      conNameFormPopupCtlr.init();
-      coaPopupCtlr.init();
+
     });
   </script>
 {% endblock %}

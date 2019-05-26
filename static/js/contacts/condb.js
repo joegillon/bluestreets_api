@@ -5,14 +5,23 @@
 /*======================================================================
 Contacts Collection
 ======================================================================*/
-function buildContactsCollection() {
-  for (var rec of CONTACT_REX) {
-    rec["display_name"] = getDisplayName(rec);
-    rec["display_addr"] = getDisplayAddress(rec);
-    rec["display_pct"] = rec["precinct_id"] ?
-      db.pcts({id: rec["precinct_id"]}).display : "";
+function buildContactsCollection(data) {
+  for (var rec of data) {
+    rec.display_name = getDisplayName(rec);
+    rec.display_addr = getDisplayAddress(rec);
+    rec.display_pct = "";
+    rec.senate = "";
+    rec.house = "";
+    rec.congress = "";
+    if (rec.precinct_id) {
+      let pct = db.pcts({id: rec.precinct_id}).first();
+      rec.display_pct = pct.display;
+      rec.senate = pct.state_senate;
+      rec.house = pct.state_house;
+      rec.congress = pct.congress;
+    }
   }
-  db.contacts = TAFFY(CONTACT_REX);
+  db.contacts = TAFFY(data);
 }
 
 /*======================================================================
@@ -45,19 +54,11 @@ function buildCityZips() {
 }
 
 function addDisplay2Dups() {
-  const pcts = streetsCollection.find(
-    {$distinct: {precinct_id: 1}},
-    {precinct_id: 1, pct_name: 1, _id: 0}
-  );
-  const pct_names = {};
-  pcts.forEach(function(pct) {
-    pct_names[pct['precinct_id']] = pct['pct_name'];
-  });
-
   dups.forEach(function(dup) {
     Object.values(dup).forEach(function(d) {
-      d['pct_name'] = pct_names[d['precinct_id']];
-      d['name'] = wholeName(d)
+      d['display_name'] = getDisplayName(d);
+      d['display_addr'] = getDisplayAddress(d);
+      d['display_pct'] = db.pcts({id: d['precinct_id']}).first().display;
     })
   });
 }
@@ -65,17 +66,11 @@ function addDisplay2Dups() {
 /*======================================================================
 Groups and Memberships Collections
 ======================================================================*/
-function build_groups_db() {
-  groupsCollection = db.collection("groups").deferredCalls(false);
-  groupsCollection.insert(groupRecords);
+function buildGroupsCollections() {
+  db.groups = TAFFY(GROUP_REX);
+  db.memberships = TAFFY(MEMBERSHIP_REX);
 
-  membershipsCollection = db.collection("memberships").deferredCalls(false);
-  membershipsCollection.insert(membershipRecords);
-
-  groupRecords.forEach(function (group) {
-    membershipsCollection.update(
-      {group_id: group.id},
-      {group_name: group.name}
-    )
+  db.groups().each(function (group) {
+    db.memberships({group_id: group.id}).update({group_name: group.name});
   });
 }

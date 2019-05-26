@@ -6,23 +6,24 @@ class PersonName(object):
     chars_to_remove = " '."
 
     def __init__(self, d):
-        self.__last = ''
-        self.__first = ''
-        self.__middle = ''
-        self.__suffix = ''
+        self.__last_name = ''
+        self.__first_name = ''
+        self.__middle_name = ''
+        self.__name_suffix = ''
         self.__nickname = ''
         self.__alias = ''
-        self.__metaphone = ''
+        self.__name_metaphone = ''
 
         for k, v in d.items():
-            setattr(self, k, v)
+            if hasattr(self, k):
+                setattr(self, k, v)
 
     def __str__(self):
         return PersonName.display_name({
-            'last': self.last,
-            'first': self.first,
-            'middle': self.middle,
-            'suffix': self.suffix
+            'last_name': self.last_name,
+            'first_name': self.first_name,
+            'middle_name': self.middle_name,
+            'name_suffix': self.name_suffix
         })
 
     def attrs(self):
@@ -32,37 +33,37 @@ class PersonName(object):
         return {attr: getattr(self, attr) for attr in self.attrs()}
 
     @property
-    def last(self):
-        return self.__last
+    def last_name(self):
+        return self.__last_name
 
-    @last.setter
-    def last(self, value):
-        self.__last = self.__clean(value)
-        self.metaphone = MatchLib.get_single(self.__last)
-
-    @property
-    def first(self):
-        return self.__first
-
-    @first.setter
-    def first(self, value):
-        self.__first = self.__clean(value)
+    @last_name.setter
+    def last_name(self, value):
+        self.__last_name = self.__clean(value)
+        self.name_metaphone = MatchLib.get_single(self.__last_name)
 
     @property
-    def middle(self):
-        return self.__middle
+    def first_name(self):
+        return self.__first_name
 
-    @middle.setter
-    def middle(self, value):
-        self.__middle = self.__clean(value)
+    @first_name.setter
+    def first_name(self, value):
+        self.__first_name = self.__clean(value)
 
     @property
-    def suffix(self):
-        return self.__suffix
+    def middle_name(self):
+        return self.__middle_name
 
-    @suffix.setter
-    def suffix(self, value):
-        self.__suffix = self.__clean(value)
+    @middle_name.setter
+    def middle_name(self, value):
+        self.__middle_name = self.__clean(value)
+
+    @property
+    def name_suffix(self):
+        return self.__name_suffix
+
+    @name_suffix.setter
+    def name_suffix(self, value):
+        self.__name_suffix = self.__clean(value)
 
     @property
     def nickname(self):
@@ -81,12 +82,12 @@ class PersonName(object):
         self.__alias = value
 
     @property
-    def metaphone(self):
-        return self.__metaphone
+    def name_metaphone(self):
+        return self.__name_metaphone
 
-    @metaphone.setter
-    def metaphone(self, value):
-        self.__metaphone = value
+    @name_metaphone.setter
+    def name_metaphone(self, value):
+        self.__name_metaphone = value
 
     def __clean(self, value):
         if not value:
@@ -95,9 +96,9 @@ class PersonName(object):
 
     @staticmethod
     def display_name(d):
-        s = '%s, %s' % (d['last'], d['first'])
-        if d['middle']:
-            s += ' %s' % d['middle']
-        if d['suffix']:
-            s += ', %s' % d['suffix']
+        s = '%s, %s' % (d['last_name'], d['first_name'])
+        if d['middle_name']:
+            s += ' %s' % d['middle_name']
+        if d['name_suffix']:
+            s += ', %s' % d['name_suffix']
         return s

@@ -56,6 +56,14 @@ var conMatchToolbarCtlr = {
     }
   },
 
+  contactMatch: function(values) {
+    let contact = new Contact(values);
+    let matches = contact.fuzzyLookup();
+    if (matches.length > 0) {
+      conMatchGridCtlr.load(matches);
+    }
+  },
+
   voterMatch: function () {
     var values = conFormCtlr.getValues();
     if (values.last_name == "" || values.first_name == "") {
@@ -63,9 +71,9 @@ var conMatchToolbarCtlr = {
       return;
     }
     var params = {
-      last: values.last_name,
-      first: values.first_name,
-      middle: values.middle_name,
+      last_name: values.last_name,
+      first_name: values.first_name,
+      middle_name: values.middle_name,
       address: values.display_addr,
       city: values.city,
       zipcode: values.zipcode
@@ -130,42 +138,42 @@ var conCGrid = {
   columns: [
     {
       header: "Name",
-      template: "#name.display#",
+      template: "#display_name#",
       adjust: "data",
       fillspace: true,
-      tooltip: "#name.display#"
+      tooltip: "#display_name#"
     },
    {
       header: 'Address',
-      template: "#address.display#",
+      template: "#display_addr#",
       adjust: "data",
       fillspace: true,
-      tooltip: "#address.display#, #address.city#"
+      tooltip: "#city#, #zipcode#"
     },
     {
       header: 'Email',
-      template: "#contact_info.email#",
+      template: "#email#",
       adjust: "data",
       fillspace: true,
-      tooltip: "#contact_info.email#"
+      tooltip: "#email#"
     },
     {
       header: 'Phone 1',
       template: function(obj) {
-        return phone_prettify(obj.contact_info.phone1);
+        return phone_prettify(obj.phone1);
       },
       adjust: "data",
       fillspace: true,
-      tooltip: "#contact_info.phone1#"
+      tooltip: "#phone1#"
     },
     {
       header: 'Phone 2',
       template: function(obj) {
-        return phone_prettify(obj.contact_info.phone2);
+        return phone_prettify(obj.phone2);
       },
       adjust: "data",
       fillspace: true,
-      tooltip: "#contact_info.phone2#"
+      tooltip: "#phone2#"
     }
   ],
   on: {

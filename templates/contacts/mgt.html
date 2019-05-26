@@ -8,15 +8,20 @@
   {{ super() }}
 
   <script>
-    var contactRecords = {{ contacts|tojson }};
-    var groupRecords = {{ groups|tojson }};
-    var membershipRecords = {{ members|tojson }};
-    var streetRecords = {{ streets|tojson }};
+    const CONTACT_REX = {{ contacts|tojson }};
+    const GROUP_REX = {{ groups|tojson }};
+    const MEMBERSHIP_REX = {{ members|tojson }};
+    const STREET_REX = {{ streets|tojson }};
+    const PCT_REX = {{ precincts|tojson }};
   </script>
 
   <script src="{{ url_for('static', filename='js/lib/double-metaphone.js') }}"></script>
   <script src="{{ url_for('static', filename='js/lib/parse-address.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/lib/fuzzball.umd.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/match_lib.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/models/street.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/models/address.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/models/contact.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/condb.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/grid_panel.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/form_panel.js') }}"></script>
@@ -30,16 +35,7 @@
   <script type="text/javascript" charset="utf-8">
 
     webix.ready(function() {
-
-{#      webix.ui(conCGrid);#}
-{#      webix.ui(conVGrid);#}
-{#      webix.ui(conSGrid);#}
-{#      webix.ui(coaPopup);#}
-{#      webix.ui(memPopup);#}
-{#      webix.ui(csvExportTable);#}
-{##}
       conMgtPanelCtlr.init();
-{#      csvExportTableCtlr.init();#}
   });
 
   </script>

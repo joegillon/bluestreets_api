@@ -25,3 +25,11 @@ class Precinct(db.Model):
     def serialize(self):
         result = {attr: getattr(self, attr) for attr in self.attrs()}
         return result
+
+    @staticmethod
+    def get_all():
+        return Precinct.query.all();
+
+    @staticmethod
+    def get_one(pct_id):
+        return Precinct.query.get(pct_id)

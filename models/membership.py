@@ -3,7 +3,7 @@ from models.ts_mixin import TimestampMixin
 
 
 class Membership(TimestampMixin, db.Model):
-    __tablename__ = 'group_members'
+    __tablename__ = 'memberships'
 
     id = db.Column(db.Integer, primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'))
@@ -16,3 +16,7 @@ class Membership(TimestampMixin, db.Model):
 
     def serialize(self):
         return {attr: getattr(self, attr) for attr in self.attrs()}
+
+    @staticmethod
+    def get_all():
+        return Membership.query.all()

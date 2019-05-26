@@ -39,10 +39,10 @@ class Voter(TimestampMixin, db.Model):
 
     def __str__(self):
         return PersonName.display_name({
-            'last': self.last_name,
-            'first': self.first_name,
-            'middle': self.middle_name,
-            'suffix': self.name_suffix
+            'last_name': self.last_name,
+            'first_name': self.first_name,
+            'middle_name': self.middle_name,
+            'name_suffix': self.name_suffix
         })
 
     def attrs(self):
@@ -98,16 +98,16 @@ class Voter(TimestampMixin, db.Model):
             (Voter.street_metaphone == addr.street_metaphone) &
             (Voter.street_name.like(addr.street_name[0] + '%')) &
             (Voter.house_number.between(addr.block[0], addr.block[1])) &
-            (Voter.name_metaphone == pn.metaphone) &
-            (Voter.last_name.like(pn.last[0] + '%'))
+            (Voter.name_metaphone == pn.name_metaphone) &
+            (Voter.last_name.like(pn.last_name[0] + '%'))
         ).all()
 
     @staticmethod
     def by_fuzzy_name(pn):
         return Voter.query.filter(
-            (Voter.name_metaphone == pn.metaphone) &
-            (Voter.last_name.like(pn.last[0] + '%')) &
-            (Voter.first_name.like(pn.first[0] + '%'))
+            (Voter.name_metaphone == pn.name_metaphone) &
+            (Voter.last_name.like(pn.last_name[0] + '%')) &
+            (Voter.first_name.like(pn.first_name[0] + '%'))
         ).all()
 
     @staticmethod

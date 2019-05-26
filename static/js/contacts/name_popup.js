@@ -18,7 +18,7 @@ var conNameForm = {
             {
               view: "text",
               label: "Last",
-              name: "last",
+              name: "last_name",
               required: true,
               width: 200,
               validate: webix.rules.isNotEmpty,
@@ -32,7 +32,7 @@ var conNameForm = {
             {
               view: "text",
               label: "First",
-              name: "first",
+              name: "first_name",
               required: true,
               width: 100,
               validate: webix.rules.isNotEmpty,
@@ -46,7 +46,7 @@ var conNameForm = {
             {
               view: "text",
               label: "Middle",
-              name: "middle",
+              name: "middle_name",
               width: 100,
               on: {
                 onKeyPress: function(code) {
@@ -57,7 +57,7 @@ var conNameForm = {
             {
               view: "text",
               label: "Suffix",
-              name: "suffix",
+              name: "name_suffix",
               width: 50,
               on: {
                 onTimedKeyPress: function() {
@@ -157,7 +157,8 @@ var conNameFormPopupCtlr = {
     conNameFormCtlr.init();
   },
 
-  show: function() {
+  show: function(data) {
+    $$("conNameForm").setValues(data);
     this.popup.show();
   },
 
@@ -167,14 +168,14 @@ var conNameFormPopupCtlr = {
   },
 
   submit: function() {
-    var values = conNameFormCtlr.getValues();
-    var currentItem = conDupsGridCtlr.getSelectedItem();
-    if (values.last != "") currentItem.last = values.last;
-    if (values.first != "") currentItem.first = values.first;
-    if (values.middle != "") currentItem.middle = values.middle;
-    if (values.suffix != "") currentItem.suffix = values.suffix;
+    let values = conNameFormCtlr.getValues();
+    let currentItem = conDupsGridCtlr.getSelectedItem();
+    if (values.last_name != "") currentItem.last_name = values.last_name;
+    if (values.first_name != "") currentItem.first_name = values.first_name;
+    if (values.middle_name != "") currentItem.middle_name = values.middle_name;
+    if (values.name_suffix != "") currentItem.name_suffix = values.name_suffix;
     if (values.nickname != "") currentItem.nickname = values.nickname;
-    currentItem.name = wholeName(currentItem);
+    currentItem.display_name = getDisplayName(currentItem);
     conDupsGridCtlr.updateSelectedItem(currentItem);
     this.hide();
   }

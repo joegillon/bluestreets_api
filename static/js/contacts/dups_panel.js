@@ -19,8 +19,8 @@ var conDupsGrid = {
   drag: true,
   columns: [
     {id: "id", header: "ID", adjust: true, readonly: true},
-    {id: "name", header: "Name", adjust: "data", sort: "string", tooltip: "#nickname#"},
-    {id: "address", header: "Address", adjust: true, sort: "string"},
+    {id: "display_name", header: "Name", adjust: "data", sort: "string", tooltip: "#nickname#"},
+    {id: "display_addr", header: "Address", adjust: true, sort: "string"},
     {id: "zipcode", header: "Zip", sort: "string", width: 50},
     {id: "email", header: "Email", adjust: "data", sort: "string", editor: "text"},
     {id: "phone1", header: "Phone 1", sort: "string", editor: "text"},
@@ -28,7 +28,7 @@ var conDupsGrid = {
     {id: "birth_year", header: "BYr", editor: "text", sort: "string", width: 50},
     {id: "gender", header: "Sex", adjust: "header", editor: "upperCaseEditor", sort: "string", width: 50},
     {id: "voter_id", header: "Voter ID", adjust: "data", readonly: true, sort: "string"},
-    {id: "pct_name", header: "Pct", adjust: "data", readonly: true, sort: "string"}
+    {id: "display_pct", header: "Pct", adjust: "data", readonly: true, sort: "string"}
   ]
 };
 
@@ -145,28 +145,29 @@ var conDupsGridCtlr = {
 
     this.grid.attachEvent("onItemDblClick", function(id, e, node) {
 
-      var grid = $$("conDupsGrid");
+      let grid = $$("conDupsGrid");
 //       grid.editStop();
 
-      var isVoterRec = conDupsGridCtlr.isVoterRec(id.row);
+      let isVoterRec = conDupsGridCtlr.isVoterRec(id.row);
 
-      if (id.column == "name") {
+      if (id.column == "display_name") {
         if (isVoterRec) {
           webix.confirm(
             "Are you sure you want to change this voter record name?",
             "confirm-warning",
             function (yes) {
               if (yes) {
-                conNameFormPopupCtlr.show();
+                let item = $$("conDupsGrid").getSelectedItem();
+                conNameFormPopupCtlr.show(item);
               }
             }
           );
         } else {
-          conNameFormPopupCtlr.show();
+          conNameFormPopupCtlr.show($$("conDupsGrid").getSelectedItem());
         }
       }
 
-      if (isIn(id.column, ["address", "zipcode"])) {
+      if (isIn(id.column, ["display_addr", "zipcode"])) {
         if (isVoterRec) {
           webix.confirm(
             "Are you sure you want to change this voter record address?",
@@ -338,7 +339,9 @@ var conDupsGridToolbar = {
 /*=====================================================================
 Duplicates Grid Panel
 =====================================================================*/
-var conDupsPanel = {
+const conDupsPanel = {
+  container: "content_container",
+  autowidth: true,
   rows: [conDupsGridToolbar, conDupsGrid]
 };
 
@@ -350,11 +353,24 @@ var conDupsPanelCtlr = {
   deletes: [],
 
   init: function() {
-    build_streets_db();
-    addDisplay2Dups();
+    this.buildDB();
     this.setEditors();
+
+    webix.ui(conNameFormPopup);
+    webix.ui(coaPopup);
+    webix.ui(conDupsPanel);
+
+    conNameFormPopupCtlr.init();
+    coaPopupCtlr.init();
+
     conDupsGridCtlr.init();
     conDupsGridCtlr.next();
+  },
+
+  buildDB: function() {
+    buildStreetsCollection();
+    buildPrecinctsCollection();
+    addDisplay2Dups();
   },
 
   setEditors: function() {

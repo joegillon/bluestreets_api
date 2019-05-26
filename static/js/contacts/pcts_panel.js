@@ -48,7 +48,7 @@ const conPctPanelCtlr = {
     buildPrecinctsCollection();
     buildStreetsCollection();
     buildCityZips();
-    buildContactsCollection();
+    buildContactsCollection(CONTACT_REX);
   },
 
    buildConFormCtlr: function() {

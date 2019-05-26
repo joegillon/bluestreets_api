@@ -38,11 +38,17 @@ class Address  {
     }
 
     this.house_number = arg.house_number;
-//     this.block = new Block();
+    this.setBlock();
     this.street = new Street(arg);
     this.unit = arg.unit;
     this.city = arg.city;
     this.zipcode = arg.zipcode;
+  }
+
+  setBlock() {
+    let x = parseInt(this.house_number / 100) * 100;
+    let y = x + 99;
+    this.block = [x, y];
   }
 
   getMatches(collection) {

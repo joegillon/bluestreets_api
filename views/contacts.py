@@ -13,30 +13,29 @@ con = Blueprint('con', __name__, url_prefix='/con')
 @con.route('/grid', methods=['GET', 'POST'])
 def grid():
     if request.method == 'GET':
-        rex = Contact.query.order_by(
-            Contact.last,
-            Contact.first,
-            Contact.middle
-        ).all()
+        rex = Contact.get_all()
         contacts = [rec.serialize() for rec in rex]
 
-        rex = Group.query.order_by(Group.name,).all()
+        rex = Group.get_all()
         groups = [rec.serialize() for rec in rex]
 
-        rex = Membership.query.all()
+        rex = Membership.get_all()
         memberships = [rec.serialize() for rec in rex]
+
+        rex = Precinct.get_all()
+        pcts = [rec.serialize() for rec in rex]
 
         rex = Jurisdiction.query.all()
         jurisdictions = {rec.code: rec.name for rec in rex}
 
-        rex = Street.query.filter_by(county_code=81).all()
+        rex = Street.query.all()
         streets = [rec.serialize() for rec in rex]
-        for street in streets:
-            street['pct_name'] = '%s %s %s' % (
-                jurisdictions[street['jurisdiction_code']],
-                street['ward'],
-                street['precinct']
-            )
+        # for street in streets:
+        #     street['pct_name'] = '%s %s %s' % (
+        #         jurisdictions[street['jurisdiction_code']],
+        #         street['ward'],
+        #         street['precinct']
+        #     )
 
         return render_template(
             'contacts/mgt.html',
@@ -44,6 +43,7 @@ def grid():
             groups=groups,
             members=memberships,
             streets=streets,
+            precincts=pcts,
             title='Contacts'
         )
 
@@ -120,30 +120,24 @@ def duplicates():
             for row in rdr:
                 ids = list(map(int, row))
                 rex = Contact.query.filter(Contact.id.in_(ids)).all()
-                contacts = {rec.id: serialize_dup(rec) for rec in rex}
-                # dup = {ids[0]: contacts}
+                contacts = {rec.id: rec.serialize() for rec in rex}
                 dups.append(contacts)
         csvfile.close()
 
         if not dups:
             return jsonify(msg='No duplicates!')
 
-        rex = Jurisdiction.query.all()
-        jurisdictions = {rec.code: rec.name for rec in rex}
-
-        rex = Street.query.filter_by(county_code=81).all()
+        rex = Street.get_all()
         streets = [rec.serialize() for rec in rex]
-        for street in streets:
-            street['pct_name'] = '%s %s %s' % (
-                jurisdictions[street['jurisdiction_code']],
-                street['ward'],
-                street['precinct']
-            )
+
+        rex = Precinct.get_all()
+        pcts = [rec.serialize() for rec in rex]
 
         return render_template(
             'contacts/dups.html',
             dups=dups,
             streets=streets,
+            precincts=pcts,
             title='Duplicates'
         )
 
@@ -169,51 +163,51 @@ def duplicates():
     return jsonify(msg='Whoopee!')
 
 
-def serialize_dup(dup):
-    return {
-        'id': dup.id,
-        'last': dup.last,
-        'first': dup.first,
-        'middle': dup.middle,
-        'suffix': dup.suffix,
-        'nickname': dup.nickname,
-        'address': get_address(dup),
-        'city': dup.city,
-        'zipcode': dup.zipcode,
-        'email': dup.email,
-        'phone1': dup.phone1,
-        'phone2': dup.phone2,
-        'voter_id': dup.voter_id,
-        'precinct_id': dup.precinct_id,
-        'birth_year': dup.birth_year,
-        'gender': dup.gender,
-        'reg_date': dup.reg_date
-    }
+# def serialize_dup(dup):
+#     return {
+#         'id': dup.id,
+#         'last': dup.last,
+#         'first': dup.first,
+#         'middle': dup.middle,
+#         'suffix': dup.suffix,
+#         'nickname': dup.nickname,
+#         'address': get_address(dup),
+#         'city': dup.city,
+#         'zipcode': dup.zipcode,
+#         'email': dup.email,
+#         'phone1': dup.phone1,
+#         'phone2': dup.phone2,
+#         'voter_id': dup.voter_id,
+#         'precinct_id': dup.precinct_id,
+#         'birth_year': dup.birth_year,
+#         'gender': dup.gender,
+#         'reg_date': dup.reg_date
+#     }
 
 
-def get_name(dup):
-    s = dup.last + ', ' + dup.first
-    if dup.middle:
-        s += ' ' + dup.middle
-    if dup.suffix:
-        s += ', ' + dup.suffix
-    return s
+# def get_name(dup):
+#     s = dup.last + ', ' + dup.first
+#     if dup.middle:
+#         s += ' ' + dup.middle
+#     if dup.suffix:
+#         s += ', ' + dup.suffix
+#     return s
 
 
-def get_address(dup):
-    if not dup.street_name:
-        return ''
-    s = str(dup.house_number)
-    if dup.pre_direction:
-        s += ' ' + dup.pre_direction
-    s += ' ' + dup.street_name
-    if dup.street_type:
-        s += ' ' + dup.street_type
-    if dup.suf_direction:
-        s += ' ' + dup.suf_direction
-    if dup.unit:
-        s += ' Unit ' + dup.unit
-    return s
+# def get_address(dup):
+#     if not dup.street_name:
+#         return ''
+#     s = str(dup.house_number)
+#     if dup.pre_direction:
+#         s += ' ' + dup.pre_direction
+#     s += ' ' + dup.street_name
+#     if dup.street_type:
+#         s += ' ' + dup.street_type
+#     if dup.suf_direction:
+#         s += ' ' + dup.suf_direction
+#     if dup.unit:
+#         s += ' Unit ' + dup.unit
+#     return s
 
 
 @con.route('/precincts', methods=['GET', 'POST'])
@@ -224,10 +218,10 @@ def precincts():
             return jsonify(msg='No contacts without precinct!')
         contacts = [rec.serialize() for rec in rex]
 
-        rex = Precinct.query.all()
+        rex = Precinct.get_all()
         pcts = [rec.serialize() for rec in rex]
 
-        rex = Street.query.all()
+        rex = Street.get_all()
         streets = [rec.serialize() for rec in rex]
 
         return render_template(
@@ -250,50 +244,3 @@ def voter_lookup():
         return jsonify(candidates=candidates)
     except Exception as ex:
         return jsonify(error=str(ex))
-
-
-@con.route('/street_lookup', methods=['POST'])
-def street_lookup():
-    from models.address import str_parse
-    from utils.match import MatchLib
-
-    params = json.loads(request.form['params'])
-    addr = str_parse(params['address'])
-    addr['county_code'] = '81'  # TODO: get from cfg
-    addr['meta'] = Address.get_street_meta(addr['street_name'])
-    if params['city']:
-        addr['city'] = params['city']
-    if params['zipcode']:
-        addr['zipcode'] = params['zipcode']
-
-    dao = Dao()
-
-    try:
-        candidates = turf_dao.street_fuzzy_lookup(dao, addr)
-        matches = MatchLib.get_best_matches(addr['street_name'], [c['street_name'] for c in candidates], 80)
-        matches = [match[0] for match in matches]
-        candidates = [candidate for candidate in candidates if candidate['street_name'] in matches]
-        candidates = [{
-            'address': {
-                'house_num_low': candidate['house_num_low'],
-                'house_num_high': candidate['house_num_high'],
-                'odd_even': candidate['odd_even'],
-                'pre_direction': candidate['pre_direction'],
-                'street_name': candidate['street_name'],
-                'street_type': candidate['street_type'],
-                'suf_direction': candidate['suf_direction'],
-                'unit_low': candidate['ext_low'],
-                'unit_high': candidate['ext_high'],
-                'city': candidate['city'],
-                'zipcode': candidate['zipcode']
-            },
-            'voter_info': {
-                'precinct_id': candidate['precinct_id']
-            }
-        } for candidate in candidates]
-
-        return jsonify(candidates=candidates)
-    except Exception as ex:
-        return jsonify(error=str(ex))
-
-

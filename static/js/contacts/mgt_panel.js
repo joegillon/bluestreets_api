@@ -99,20 +99,15 @@ var conGridToolbarCtlr = {
   },
 
   load_precincts: function() {
-    var opts = streetsCollection.find(
-      {$distinct: {pct_name: {$ne: ""}}},
-      {$orderBy: {pct_name: 1}}
-    ).map(function(street) {
-      return street.pct_name;
-    });
+    let opts = db.pcts().map(pct => pct.display);
     opts.unshift("All Precincts");
-    $$("pctSelect").define("options", opts);
+    $$("pctSelect").define("options", opts.sort());
     $$("pctSelect").refresh();
   },
 
   load_groups: function() {
     var opts = [{id: 0, value: "All Groups"}];
-    groupsCollection.find().forEach(function(grp) {
+    db.groups().each(function(grp) {
       opts.push({
         id: grp.id,
         value: grp.name
@@ -159,25 +154,25 @@ var conGridToolbarCtlr = {
 var mgtGridCols = [
   {
     id: "pct",
-    template: "#voter_info.precinct_name#",
+    template: "#display_pct#",
     header: "Precinct",
     width: 210,
     sort: sortByPrecinctName
   },
   {
-    template: "#voter_info.congress#",
+    template: "#congress#",
     header: "US",
     width: 60,
     sort: sortByCongressionalDistrict
   },
   {
-    template: "#voter_info.senate#",
+    template: "#senate#",
     header: {text: "State Senate", css: "multiline", height: 40},
     width: 60,
     sort: sortBySenateDistrict
   },
   {
-    template: "#voter_info.house#",
+    template: "#house#",
     header: {text: "State House", css: "multiline"},
     width: 60,
     sort: sortByHouseDistrict
@@ -272,14 +267,14 @@ var mgtFormRow = {
 /*=====================================================================
 Database
 =====================================================================*/
-var contactsCollection;
-var groupsCollection;
-var membershipsCollection;
-var streetsCollection;
-var zipcodeOptions;
-var cityOptions;
-var ordinalStreets;
-var digitMappings;
+//var contactsCollection;
+//var groupsCollection;
+//var membershipsCollection;
+//var streetsCollection;
+//var zipcodeOptions;
+//var cityOptions;
+//var ordinalStreets;
+//var digitMappings;
 
 /*=====================================================================
 Contact Management Panel
@@ -309,9 +304,11 @@ var conMgtPanelCtlr = {
   },
 
   buildDB: function() {
-    build_streets_db();
-    build_contacts_db();
-    build_groups_db();
+    buildStreetsCollection();
+    buildPrecinctsCollection();
+    buildCityZips();
+    buildContactsCollection(CONTACT_REX);
+    buildGroupsCollections();
   },
 
   buildUI: function() {
@@ -356,6 +353,12 @@ var conMgtPanelCtlr = {
       ]
     };
 
+    webix.ui(conCGrid);
+    webix.ui(conVGrid);
+    webix.ui(conSGrid);
+    webix.ui(coaPopup);
+    webix.ui(memPopup);
+    webix.ui(csvExportTable);
     webix.ui(conMgtUI);
   },
 
@@ -367,7 +370,7 @@ var conMgtPanelCtlr = {
         return;
       }
       $$("conGrid").filter(function(obj) {
-        return obj.voter_info.precinct_name.indexOf(value) == 0;
+        return obj.display_pct.indexOf(value) == 0;
       })
     };
 
@@ -376,9 +379,9 @@ var conMgtPanelCtlr = {
         conGridCtlr.load(conGridCtlr.recordSet);
         return;
       }
-      var contact_ids = membershipsCollection.find({group_id: parseInt(value)}).
-          map(function(obj) {return obj.contact_id;});
-      var subset = [];
+      let contact_ids = db.memberships({group_id: parseInt(value)}).
+          map(membership => membership.contact_id );
+      let subset = [];
       conGridCtlr.recordSet.forEach(function(contact) {
         if (contact_ids.indexOf(contact.id) != -1) {
           subset.push(contact);
@@ -450,16 +453,17 @@ var conMgtPanelCtlr = {
     conFormCtlr.loadMemberships = function(contactId) {
       $$("groupList").clearAll();
       $$("groupList").parse(
-        membershipsCollection.find({contact_id: contactId})
+        db.memberships({contact_id: contactId}).get()
       )
     };
 
     conFormCtlr.loadContact = function(contactId) {
       this.loadMemberships(contactId);
-      var contact = contactsCollection.findOne({id: contactId});
+      let contact = db.contacts({id: contactId}).first();
       this.frm.setValues(contact, true);
       this.locationReadOnly(true);
       conMatchGridCtlr.config("C");
+      conMatchToolbarCtlr.contactMatch(contact);
     }
   }
 
