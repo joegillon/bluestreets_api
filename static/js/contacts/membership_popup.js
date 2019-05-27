@@ -345,7 +345,7 @@ var memPopupCtlr = {
 
   show: function(contact_id) {
     this.contact_id = contact_id;
-    memListCtlr.load(membershipsCollection.find({contact_id: contact_id}));
+    memListCtlr.load(db.memberships({contact_id: contact_id}).get());
     this.popup.show();
   },
 

@@ -9,14 +9,14 @@ var conFormToolbar = {
   height: 35,
   elements: [
     {view: "label", label: "Details"},
-    {
-      view: "button",
-      type: "icon",
-      icon: "eraser",
-      id: "conFormClearBtn",
-      tooltip: "Clear Form",
-      width: 25
-    },
+    //{
+    //  view: "button",
+    //  type: "icon",
+    //  icon: "eraser",
+    //  id: "conFormClearBtn",
+    //  tooltip: "Clear Form",
+    //  width: 25
+    //},
     {
       view: "button",
       type: "icon",

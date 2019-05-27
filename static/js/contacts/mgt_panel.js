@@ -33,23 +33,23 @@ var mgtToolbarCols = [
       }
     }
   },
-  {
-    view: "icon",
-    icon: "tags",
-    tooltip: "Filter by tag ->"
-  },
-  {
-    view: "select",
-    id: "tagSelect",
-    width: 100,
-    options: [],
-    on: {
-      onChange: function(newv) {
-        if (newv == "0") newv = "All";
-        conGridCtlr.filter_grp(newv);
-      }
-    }
-  },
+  //{
+  //  view: "icon",
+  //  icon: "tags",
+  //  tooltip: "Filter by tag ->"
+  //},
+  //{
+  //  view: "select",
+  //  id: "tagSelect",
+  //  width: 100,
+  //  options: [],
+  //  on: {
+  //    onChange: function(newv) {
+  //      if (newv == "0") newv = "All";
+  //      conGridCtlr.filter_grp(newv);
+  //    }
+  //  }
+  //},
   {
     view: "button",
     type: "icon",
@@ -58,14 +58,14 @@ var mgtToolbarCols = [
     tooltip: "Send Email",
     click: ""
   },
-  {
-    view: "button",
-    type: "icon",
-    icon: "save",
-    width: 25,
-    tooltip: "Save CSV",
-    click: "conGridCtlr.export();"
-  },
+  //{
+  //  view: "button",
+  //  type: "icon",
+  //  icon: "save",
+  //  width: 25,
+  //  tooltip: "Save CSV",
+  //  click: "conGridCtlr.export();"
+  //},
   {
     view: "button",
     type: "icon",
@@ -95,7 +95,7 @@ var conGridToolbarCtlr = {
     this.toolbar = $$("conGridToolbar");
     this.load_precincts();
     this.load_groups();
-    this.load_tags();
+//     this.load_tags();
   },
 
   load_precincts: function() {
@@ -117,11 +117,11 @@ var conGridToolbarCtlr = {
     $$("grpSelect").refresh();
   },
 
-  load_tags: function() {
-    var opts = [{id: 0, value: "All Tags"}];
-    $$("tagSelect").define("options", opts);
-    $$("tagSelect").refresh();
-  },
+//   load_tags: function() {
+//     var opts = [{id: 0, value: "All Tags"}];
+//     $$("tagSelect").define("options", opts);
+//     $$("tagSelect").refresh();
+//   },
 
   drop: function() {
     var id = conGridCtlr.getSelectionId();
@@ -187,44 +187,44 @@ var mgtFormToolbarCols = [
     width: 25,
     tooltip: "Manage Groups",
     click: "conFormToolbarCtlr.groups();"
-  },
-  {
-    view: "button",
-    type: "icon",
-    icon: "tags",
-    width: 25,
-    tooltip: "Tag Contact",
-    click: "conFormToolbarCtlr.tags();"
   }
+  //{
+  //  view: "button",
+  //  type: "icon",
+  //  icon: "tags",
+  //  width: 25,
+  //  tooltip: "Tag Contact",
+  //  click: "conFormToolbarCtlr.tags();"
+  //}
 ];
 
 /*=====================================================================
 Export Columns
 =====================================================================*/
-var exportColumns = [
-  {id: "last", header: "Last Name"},
-  {id: "first", header: "First Name"},
-  {id: "middle", header: "Middle Name"},
-  {id: "suffix", header: "Name Suffix"},
-  {id: "nickname", header: "Nickname"},
-  {id: "gender", header: "Gender"},
-  {id: "birth_year", header: "Birth Yr"},
-  {id: "email", header: "Email"},
-  {id: "phone1", header: "Phone 1"},
-  {id: "phone2", header: "Phone 2"},
-  {id: "address", header: "Address"},
-  {id: "city", header: "City"},
-  {id: "zipcode", header: "Zip"},
-  {id: "precinct", header: "Precinct"},
-  {id: "districts", header: "Districts"},
-  {id: "groups", header: "Groups"},
-  {id: "tags", header: "Tags"}
-];
-
-var exportIgnore = {
-  $loki: true, first_name_meta: true, id: true, last_name_meta: true,
-  precinct_id: true, street_meta: true
-};
+//var exportColumns = [
+//  {id: "last", header: "Last Name"},
+//  {id: "first", header: "First Name"},
+//  {id: "middle", header: "Middle Name"},
+//  {id: "suffix", header: "Name Suffix"},
+//  {id: "nickname", header: "Nickname"},
+//  {id: "gender", header: "Gender"},
+//  {id: "birth_year", header: "Birth Yr"},
+//  {id: "email", header: "Email"},
+//  {id: "phone1", header: "Phone 1"},
+//  {id: "phone2", header: "Phone 2"},
+//  {id: "address", header: "Address"},
+//  {id: "city", header: "City"},
+//  {id: "zipcode", header: "Zip"},
+//  {id: "precinct", header: "Precinct"},
+//  {id: "districts", header: "Districts"},
+//  {id: "groups", header: "Groups"},
+//  {id: "tags", header: "Tags"}
+//];
+//
+//var exportIgnore = {
+//  $loki: true, first_name_meta: true, id: true, last_name_meta: true,
+//  precinct_id: true, street_meta: true
+//};
 
 var mgtFormRow = {
   cols: [
@@ -358,7 +358,7 @@ var conMgtPanelCtlr = {
     webix.ui(conSGrid);
     webix.ui(coaPopup);
     webix.ui(memPopup);
-    webix.ui(csvExportTable);
+    //webix.ui(csvExportTable);
     webix.ui(conMgtUI);
   },
 
@@ -403,50 +403,50 @@ var conMgtPanelCtlr = {
       conGridCtlr.showSelection(id);
     };
 
-    conGridCtlr.export = function() {
-      var filename = prompt("Enter a filename", "Data");
-      if (filename === null) {
-        return;
-      }
-
-      var mapfun = function(left, right) {
-        return {code: right.code, contact_id: left.contact_id};
-      };
-
-      var data = [];
-      $$("conGrid").eachRow(function(row_id) {
-        const row = $$("conGrid").getItem(row_id);
-
-        var grps = membershipsCollection.chain().eqJoin(groups, "group_id", "id", mapfun).
-          find({contact_id: row.id}).data().map(function(rec) {return rec.code;});
-
-        data.push({
-          name: row.name,
-          last_name: row.last_name,
-          first_name: row.first_name,
-          middle_name: row.middle_name,
-          name_suffix: row.name_suffix,
-          nickname: row.nickname,
-          gender: "",
-          birthyear: "",
-          email: row.email,
-          phone1: row.phone1,
-          phone2: row.phone2,
-          address: row.address,
-          city: row.city,
-          zipcode: row.zipcode,
-          precinct: row.pct.replace(/,/g, ':'),
-          districts: row.congress + ":" + row.senate + ":" + row.house,
-          groups: grps.join(":"),
-          tags: ""
-        });
-      });
-      data = data.sort(function(a, b) {
-        return (a.name < b.name) ? -1 : 0;
-      });
-
-      csvExportTableCtlr.export(filename, data, exportColumns, exportIgnore);
-    }
+    //conGridCtlr.export = function() {
+    //  var filename = prompt("Enter a filename", "Data");
+    //  if (filename === null) {
+    //    return;
+    //  }
+    //
+    //  var mapfun = function(left, right) {
+    //    return {code: right.code, contact_id: left.contact_id};
+    //  };
+    //
+    //  var data = [];
+    //  $$("conGrid").eachRow(function(row_id) {
+    //    const row = $$("conGrid").getItem(row_id);
+    //
+    //    var grps = membershipsCollection.chain().eqJoin(groups, "group_id", "id", mapfun).
+    //      find({contact_id: row.id}).data().map(function(rec) {return rec.code;});
+    //
+    //    data.push({
+    //      name: row.name,
+    //      last_name: row.last_name,
+    //      first_name: row.first_name,
+    //      middle_name: row.middle_name,
+    //      name_suffix: row.name_suffix,
+    //      nickname: row.nickname,
+    //      gender: "",
+    //      birthyear: "",
+    //      email: row.email,
+    //      phone1: row.phone1,
+    //      phone2: row.phone2,
+    //      address: row.address,
+    //      city: row.city,
+    //      zipcode: row.zipcode,
+    //      precinct: row.pct.replace(/,/g, ':'),
+    //      districts: row.congress + ":" + row.senate + ":" + row.house,
+    //      groups: grps.join(":"),
+    //      tags: ""
+    //    });
+    //  });
+    //  data = data.sort(function(a, b) {
+    //    return (a.name < b.name) ? -1 : 0;
+    //  });
+    //
+    //  csvExportTableCtlr.export(filename, data, exportColumns, exportIgnore);
+    //}
   },
 
   buildConFormCtlr: function() {
