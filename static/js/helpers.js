@@ -325,3 +325,20 @@ function jsonCopy(src) {
 String.prototype.splice = function(idx, rem, str) {
     return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
 };
+
+function getMyMods() {
+  let json_str = localStorage.getItem("bluestreets_mods");
+  if (json_str === null) {
+    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+    let url = Flask.url_for("mod.get_mods");
+    json_str = ajaxDao.get(url);
+    if (json_str === null) return;
+    localStorage.setItem("bluestreets_mods", json_str);
+  }
+  return JSON.parse(json_str);
+}
+
+function isNotModified(tablename) {
+  return DB.myMods({table_name: tablename}).first()["changed_at"] ==
+         DB.svrMods({table_name: tablename}).first()["changed_at"];
+}

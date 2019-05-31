@@ -26,7 +26,7 @@ class Contact {
   }
 
   byFuzzyNameAndAddr() {
-    let candidates = db.contacts(
+    let candidates = DB.contacts(
       {
         street_metaphone: this.address.street.metaphone,
         house_number: {gte: this.address.block[0], lte: this.address.block[1]},
@@ -41,7 +41,7 @@ class Contact {
   }
 
   byFuzzyName() {
-    let candidates = db.contacts({name_metaphone: this.name_metaphone}).get();
+    let candidates = DB.contacts({name_metaphone: this.name_metaphone}).get();
     return candidates.filter(
       candidate =>
         candidate.id != this.id &&

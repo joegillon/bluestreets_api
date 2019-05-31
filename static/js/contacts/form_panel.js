@@ -9,14 +9,6 @@ var conFormToolbar = {
   height: 35,
   elements: [
     {view: "label", label: "Details"},
-    //{
-    //  view: "button",
-    //  type: "icon",
-    //  icon: "eraser",
-    //  id: "conFormClearBtn",
-    //  tooltip: "Clear Form",
-    //  width: 25
-    //},
     {
       view: "button",
       type: "icon",
@@ -63,12 +55,6 @@ var conFormToolbarCtlr = {
 
   email: function() {
     webix.message("Not yet implemented");
-//     var values = this.getValues();
-//     if (values.id == "") {
-//       this.clear();
-//       return;
-//     }
-    // TODO: email contact
   },
 
   coa: function() {
@@ -85,7 +71,7 @@ var conFormToolbarCtlr = {
     if (!conFormCtlr.validate()) return;
     var vals = conFormCtlr.getValues({hidden: true});
 
-    if (db.contacts({id: {has: vals.id}}))
+    if (DB.contacts({id: {has: vals.id}}))
       vals.id = -1;
       
     //noinspection JSUnresolvedVariable,JSUnresolvedFunction
@@ -322,9 +308,9 @@ var conFormCtlr = {
 
   init: function() {
     this.frm = $$("conForm");
-    this.frm.elements["city"].define("options", db.cities);
+    this.frm.elements["city"].define("options", DB.cities);
     this.frm.elements["city"].refresh();
-    this.frm.elements["zipcode"].define("options", db.zipcodes);
+    this.frm.elements["zipcode"].define("options", DB.zipcodes);
     this.frm.elements["zipcode"].refresh();
   },
 
@@ -356,7 +342,7 @@ var conFormCtlr = {
     const contact = jsonCopy(voter);
     if ($$("chkKeep").getValue() == 1) {
       var addr = new Address(this.getValues());
-      var street_matches = addr.getMatches(db.streets);
+      var street_matches = addr.getMatches(DB.streets);
       if (street_matches.length != 1) {
         webix.message({type: "error", text: "Unable to resolve contact address to a precinct!"});
         return;
@@ -371,7 +357,7 @@ var conFormCtlr = {
       if (contact.precinct_id != street_matches[0].precinct_id)
         contact.voter_id = contact.voter_id * -1;
       contact.precinct_id = street_matches[0].precinct_id;
-      contact.display_pct = db.pcts({id: street_matches[0].precinct_id}).first().display;
+      //contact.display_pct = DB.pcts({id: street_matches[0].precinct_id}).first().display;
     }
 
     this.frm.setValues(contact, true);
@@ -396,8 +382,7 @@ var conFormCtlr = {
       street_metaphone: street.street_metaphone,
       city: street.city,
       zipcode: street.zipcode,
-      precinct_id: street.precinct_id,
-      display_pct: db.pcts({id: street.precinct_id}).first().display
+      precinct_id: street.precinct_id
     };
     this.frm.setValues(vals, true);
   },

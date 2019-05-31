@@ -53,7 +53,7 @@ const conPctPanelCtlr = {
 
    buildConFormCtlr: function() {
     conFormCtlr.loadContact = function(contactId) {
-      const contact = db.contacts({id: contactId}).first();
+      const contact = DB.contacts({id: contactId}).first();
       this.frm.setValues(contact, true);
       $$("chkKeep").setValue(false);
       this.locationReadOnly(true);

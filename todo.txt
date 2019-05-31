@@ -1,3 +1,8 @@
+Contact Mgt
+-----------
+Details toolbar: add drop contact
+
+
 Environment vars not working
 Need logging?
 SSL/https

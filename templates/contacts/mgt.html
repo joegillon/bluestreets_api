@@ -11,8 +11,8 @@
     const CONTACT_REX = {{ contacts|tojson }};
     const GROUP_REX = {{ groups|tojson }};
     const MEMBERSHIP_REX = {{ members|tojson }};
-    const STREET_REX = {{ streets|tojson }};
-    const PCT_REX = {{ precincts|tojson }};
+{#    const STREET_REX = {{ streets|tojson }};#}
+{#    const PCT_REX = {{ precincts|tojson }};#}
   </script>
 
   <script src="{{ url_for('static', filename='js/lib/double-metaphone.js') }}"></script>
@@ -30,7 +30,6 @@
   <script src="{{ url_for('static', filename='js/contacts/coa_popup.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/membership_popup.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/mgt_panel.js') }}"></script>
-{#  <script src="{{ url_for('static', filename='js/csv/export_table.js') }}"></script>#}
 
   <script type="text/javascript" charset="utf-8">
 

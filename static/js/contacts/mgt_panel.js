@@ -33,23 +33,6 @@ var mgtToolbarCols = [
       }
     }
   },
-  //{
-  //  view: "icon",
-  //  icon: "tags",
-  //  tooltip: "Filter by tag ->"
-  //},
-  //{
-  //  view: "select",
-  //  id: "tagSelect",
-  //  width: 100,
-  //  options: [],
-  //  on: {
-  //    onChange: function(newv) {
-  //      if (newv == "0") newv = "All";
-  //      conGridCtlr.filter_grp(newv);
-  //    }
-  //  }
-  //},
   {
     view: "button",
     type: "icon",
@@ -58,14 +41,6 @@ var mgtToolbarCols = [
     tooltip: "Send Email",
     click: ""
   },
-  //{
-  //  view: "button",
-  //  type: "icon",
-  //  icon: "save",
-  //  width: 25,
-  //  tooltip: "Save CSV",
-  //  click: "conGridCtlr.export();"
-  //},
   {
     view: "button",
     type: "icon",
@@ -95,19 +70,18 @@ var conGridToolbarCtlr = {
     this.toolbar = $$("conGridToolbar");
     this.load_precincts();
     this.load_groups();
-//     this.load_tags();
   },
 
   load_precincts: function() {
-    let opts = db.pcts().map(pct => pct.display);
+    let opts = DB.pcts().map(pct => pct.display).sort();
     opts.unshift("All Precincts");
-    $$("pctSelect").define("options", opts.sort());
+    $$("pctSelect").define("options", opts);
     $$("pctSelect").refresh();
   },
 
   load_groups: function() {
     var opts = [{id: 0, value: "All Groups"}];
-    db.groups().each(function(grp) {
+    DB.groups().each(function(grp) {
       opts.push({
         id: grp.id,
         value: grp.name
@@ -116,12 +90,6 @@ var conGridToolbarCtlr = {
     $$("grpSelect").define("options", opts);
     $$("grpSelect").refresh();
   },
-
-//   load_tags: function() {
-//     var opts = [{id: 0, value: "All Tags"}];
-//     $$("tagSelect").define("options", opts);
-//     $$("tagSelect").refresh();
-//   },
 
   drop: function() {
     var id = conGridCtlr.getSelectionId();
@@ -188,104 +156,57 @@ var mgtFormToolbarCols = [
     tooltip: "Manage Groups",
     click: "conFormToolbarCtlr.groups();"
   }
-  //{
-  //  view: "button",
-  //  type: "icon",
-  //  icon: "tags",
-  //  width: 25,
-  //  tooltip: "Tag Contact",
-  //  click: "conFormToolbarCtlr.tags();"
-  //}
 ];
 
-/*=====================================================================
-Export Columns
-=====================================================================*/
-//var exportColumns = [
-//  {id: "last", header: "Last Name"},
-//  {id: "first", header: "First Name"},
-//  {id: "middle", header: "Middle Name"},
-//  {id: "suffix", header: "Name Suffix"},
-//  {id: "nickname", header: "Nickname"},
-//  {id: "gender", header: "Gender"},
-//  {id: "birth_year", header: "Birth Yr"},
-//  {id: "email", header: "Email"},
-//  {id: "phone1", header: "Phone 1"},
-//  {id: "phone2", header: "Phone 2"},
-//  {id: "address", header: "Address"},
-//  {id: "city", header: "City"},
-//  {id: "zipcode", header: "Zip"},
-//  {id: "precinct", header: "Precinct"},
-//  {id: "districts", header: "Districts"},
-//  {id: "groups", header: "Groups"},
-//  {id: "tags", header: "Tags"}
-//];
-//
-//var exportIgnore = {
-//  $loki: true, first_name_meta: true, id: true, last_name_meta: true,
-//  precinct_id: true, street_meta: true
+//var mgtFormRow = {
+//  cols: [
+//    {
+//      rows: [
+//        {
+//          view: "label",
+//          label: "Groups"
+//        },
+//        {
+//          view: "list",
+//          id: "groupList",
+//          template: "#group_name#",
+//          tooltip: {
+//            template: "#role#"
+//          },
+//          readonly: true,
+//          height: 100
+//        }
+//      ]
+//    },
+//    {
+//      rows: [
+//        {
+//          view: "label",
+//          label: "Tags"
+//        },
+//        {
+//          view: "list",
+//          label: "Tags",
+//          name: "tags",
+//          readonly: true,
+//          height: 100
+//        }
+//      ]
+//    }
+//  ]
 //};
-
-var mgtFormRow = {
-  cols: [
-    {
-      rows: [
-        {
-          view: "label",
-          label: "Groups"
-        },
-        {
-          view: "list",
-          id: "groupList",
-          template: "#group_name#",
-          tooltip: {
-            template: "#role#"
-          },
-          readonly: true,
-          height: 100
-        }
-      ]
-    },
-    {
-      rows: [
-        {
-          view: "label",
-          label: "Tags"
-        },
-        {
-          view: "list",
-          label: "Tags",
-          name: "tags",
-          readonly: true,
-          height: 100
-        }
-      ]
-    }
-  ]
-};
-
-/*=====================================================================
-Database
-=====================================================================*/
-//var contactsCollection;
-//var groupsCollection;
-//var membershipsCollection;
-//var streetsCollection;
-//var zipcodeOptions;
-//var cityOptions;
-//var ordinalStreets;
-//var digitMappings;
 
 /*=====================================================================
 Contact Management Panel
 =====================================================================*/
-//var conMgtPanel = {
-//  cols: [conGridPanel, conDetailPanel]
-//};
-
 var conMgtPanelCtlr = {
   init: function() {
-    this.buildDB();
+    try {
+      this.buildDB();
+    } catch (ex) {
+      webix.message({type: "error", text: ex})
+      return;
+    }
     this.buildUI();
 
     conGridPanelCtlr.init();
@@ -304,8 +225,8 @@ var conMgtPanelCtlr = {
   },
 
   buildDB: function() {
-    buildStreetsCollection();
     buildPrecinctsCollection();
+    buildStreetsCollection();
     buildCityZips();
     buildContactsCollection(CONTACT_REX);
     buildGroupsCollections();
@@ -319,7 +240,7 @@ var conMgtPanelCtlr = {
     this.buildConGridCtlr();
 
     // Build conDetailPanel
-    conForm.elements = conForm.elements.concat(mgtFormRow);
+    //conForm.elements = conForm.elements.concat(mgtFormRow);
     insertArrayAt(conFormToolbar.elements, 1, mgtFormToolbarCols);
     this.buildConFormCtlr();
 
@@ -358,7 +279,6 @@ var conMgtPanelCtlr = {
     webix.ui(conSGrid);
     webix.ui(coaPopup);
     webix.ui(memPopup);
-    //webix.ui(csvExportTable);
     webix.ui(conMgtUI);
   },
 
@@ -379,7 +299,7 @@ var conMgtPanelCtlr = {
         conGridCtlr.load(conGridCtlr.recordSet);
         return;
       }
-      let contact_ids = db.memberships({group_id: parseInt(value)}).
+      let contact_ids = DB.memberships({group_id: parseInt(value)}).
           map(membership => membership.contact_id );
       let subset = [];
       conGridCtlr.recordSet.forEach(function(contact) {
@@ -402,64 +322,19 @@ var conMgtPanelCtlr = {
       conGridCtlr.filter("");
       conGridCtlr.showSelection(id);
     };
-
-    //conGridCtlr.export = function() {
-    //  var filename = prompt("Enter a filename", "Data");
-    //  if (filename === null) {
-    //    return;
-    //  }
-    //
-    //  var mapfun = function(left, right) {
-    //    return {code: right.code, contact_id: left.contact_id};
-    //  };
-    //
-    //  var data = [];
-    //  $$("conGrid").eachRow(function(row_id) {
-    //    const row = $$("conGrid").getItem(row_id);
-    //
-    //    var grps = membershipsCollection.chain().eqJoin(groups, "group_id", "id", mapfun).
-    //      find({contact_id: row.id}).data().map(function(rec) {return rec.code;});
-    //
-    //    data.push({
-    //      name: row.name,
-    //      last_name: row.last_name,
-    //      first_name: row.first_name,
-    //      middle_name: row.middle_name,
-    //      name_suffix: row.name_suffix,
-    //      nickname: row.nickname,
-    //      gender: "",
-    //      birthyear: "",
-    //      email: row.email,
-    //      phone1: row.phone1,
-    //      phone2: row.phone2,
-    //      address: row.address,
-    //      city: row.city,
-    //      zipcode: row.zipcode,
-    //      precinct: row.pct.replace(/,/g, ':'),
-    //      districts: row.congress + ":" + row.senate + ":" + row.house,
-    //      groups: grps.join(":"),
-    //      tags: ""
-    //    });
-    //  });
-    //  data = data.sort(function(a, b) {
-    //    return (a.name < b.name) ? -1 : 0;
-    //  });
-    //
-    //  csvExportTableCtlr.export(filename, data, exportColumns, exportIgnore);
-    //}
   },
 
   buildConFormCtlr: function() {
-    conFormCtlr.loadMemberships = function(contactId) {
-      $$("groupList").clearAll();
-      $$("groupList").parse(
-        db.memberships({contact_id: contactId}).get()
-      )
-    };
+//     conFormCtlr.loadMemberships = function(contactId) {
+//       $$("groupList").clearAll();
+//       $$("groupList").parse(
+//         DB.memberships({contact_id: contactId}).get()
+//       )
+//     };
 
     conFormCtlr.loadContact = function(contactId) {
-      this.loadMemberships(contactId);
-      let contact = db.contacts({id: contactId}).first();
+//       this.loadMemberships(contactId);
+      let contact = DB.contacts({id: contactId}).first();
       this.frm.setValues(contact, true);
       this.locationReadOnly(true);
       conMatchGridCtlr.config("C");

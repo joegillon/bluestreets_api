@@ -88,7 +88,7 @@ var conMatchToolbarCtlr = {
       data["candidates"].forEach(function(candidate) {
         candidate.display_name = getDisplayName(candidate);
         candidate.display_addr = getDisplayAddress(candidate);
-        candidate.display_pct = db.pcts({id: candidate.precinct_id}).first().display;
+        candidate.display_pct = DB.pcts({id: candidate.precinct_id}).first().display;
       });
       conMatchGridCtlr.load(data["candidates"]);
     });
@@ -112,7 +112,7 @@ var conMatchToolbarCtlr = {
       cond.house_num_low = {lte: values.house_number};
       cond.house_num_high = {gte: values.house_number}
     }
-    let matches = db.streets(cond).get();
+    let matches = DB.streets(cond).get();
 
     matches = matches.filter(function(match) {
       return match.street_name[0] == street.name[0];

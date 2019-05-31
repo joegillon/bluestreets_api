@@ -98,8 +98,8 @@ var coaFormCtlr = {
 
   init: function() {
     this.frm = $$("coaForm");
-    this.frm.elements["zipcode"].define("suggest", db.zipcodes);
-    this.frm.elements["city"].define("suggest", db.cities);
+    this.frm.elements["zipcode"].define("suggest", DB.zipcodes);
+    this.frm.elements["city"].define("suggest", DB.cities);
   },
 
   clear: function() {
@@ -116,7 +116,7 @@ var coaFormCtlr = {
 
   setCity: function(zipcode) {
     if (zipcode == "") return;
-    let city = db.streets(zipcode == zipcode).first();
+    let city = DB.streets({zipcode: zipcode}).first().city;
     this.frm.elements.city.setValue(city);
     this.setStreets(zipcode);
     this.set_focus("street");
@@ -124,36 +124,37 @@ var coaFormCtlr = {
 
   setStreets: function(value) {
     if (value == "") return;
-    let streets = [];
+    let streetNames = [];
     if (isDigit(value[0])) {
-      streets = db.streets(zipcode == value).distinct("display").order("display");
+      streetNames = DB.streets({zipcode: value}).distinct("display").sort();
     } else {
-      streets = db.streets(city == value).distinct("display").order("display");
+      streetNames = DB.streets({city: value}).distinct("display").sort();
     }
-    this.frm.elements.street.define("suggest", streets);
+    this.frm.elements.street.define("suggest", streetNames);
     this.frm.elements.street.refresh();
     this.set_focus("street");
   },
 
   process: function() {
-    var vals = this.frm.getValues();
-    var addr = vals["house_number"] + " " + vals["street"];
+    let vals = this.frm.getValues();
+    let addr = vals["house_number"] + " " + vals["street"];
     if (vals.unit != "") addr += ", UNIT " + vals.unit;
     this.frm.elements.address.setValue(addr);
 
-    var house_number = parseInt(vals.house_number);
-    var odd_even = (house_number % 2 == 0) ? "E": "O";
-    let p = db.streets({
+    let house_number = parseInt(vals.house_number);
+    let odd_even = (house_number % 2 == 0) ? "E": "O";
+    odd_even = "[B," + odd_even + "]";
+    let street = DB.streets({
       zipcode: vals.zipcode,
       display: vals.street,
-      house_num_low: {'$lte': house_number},
-      house_num_high: {'$gte': house_number},
-      odd_even: {'$in': ["B", odd_even]}
+      house_num_low: {lte: house_number},
+      house_num_high: {gte: house_number},
+      street_side: {regex: new RegExp(odd_even)}
     }).first();
-    if (p)
+    if (street)
     {
-      this.frm.elements.precinct.setValue(p.pct_name);
-      this.frm.elements.precinct_id.setValue(p.precinct_id);
+      this.frm.elements.precinct.setValue(street.display_pct);
+      this.frm.elements.precinct_id.setValue(street.precinct_id);
     } else {
       this.frm.elements.precinct.setValue("Invalid address!");
     }

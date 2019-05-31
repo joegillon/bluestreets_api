@@ -98,9 +98,13 @@ def configure_ui(app):
     from views.contacts import con
     from views.groups import grp
     from views.memberships import mem
+    from views.turfs import trf
+    from views.mods import mod
     # from views.users import usr
 
     app.register_blueprint(con)
     app.register_blueprint(grp)
     app.register_blueprint(mem)
+    app.register_blueprint(trf)
+    app.register_blueprint(mod)
     # app.register_blueprint(usr)

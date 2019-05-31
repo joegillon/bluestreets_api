@@ -57,7 +57,9 @@
       <script src="{{ url_for('static', filename='js/ajax_dao.js') }}"></script>
       <script src="{{ url_for('static', filename='js/helpers.js') }}"></script>
      <script>
-        var db = {};
+        const DB = {};
+        DB.svrMods = TAFFY({{ modifications|tojson }});
+        DB.myMods = TAFFY(getMyMods());
       </script>
     {% endblock scripts %}
 

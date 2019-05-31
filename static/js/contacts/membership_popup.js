@@ -247,7 +247,7 @@ var memFormCtlr = {
     //  return {id: group.id, value: group.name}
     //});
     let thisForm = this.form;
-    let options = db.groups().map(function(group) {
+    let options = DB.groups().map(function(group) {
       return {id: group.id, value: group.name};
     });
     thisForm.elements["group_id"].define("options", options);
@@ -345,12 +345,12 @@ var memPopupCtlr = {
 
   show: function(contact_id) {
     this.contact_id = contact_id;
-    memListCtlr.load(db.memberships({contact_id: contact_id}).get());
+    memListCtlr.load(DB.memberships({contact_id: contact_id}).get());
     this.popup.show();
   },
 
   hide: function() {
-    conFormCtlr.loadMemberships(this.contact_id);
+//     conFormCtlr.loadMemberships(this.contact_id);
     memPanelCtlr.clear();
     this.popup.hide();
   },

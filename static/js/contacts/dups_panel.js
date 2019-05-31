@@ -368,8 +368,8 @@ var conDupsPanelCtlr = {
   },
 
   buildDB: function() {
-    buildStreetsCollection();
     buildPrecinctsCollection();
+    buildStreetsCollection();
     addDisplay2Dups();
   },
 

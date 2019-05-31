@@ -15,12 +15,14 @@ api = Api(app)
 configure_api(api)
 configure_ui(app)
 
+
 @app.route('/')
 def homepage():
     return render_template(
         'home.html',
         title='Blue Streets'
     )
+
 
 @app.route('/test')
 def testpage():

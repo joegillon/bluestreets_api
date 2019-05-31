@@ -6,7 +6,7 @@
 Contacts Collection
 ======================================================================*/
 function buildContactsCollection(data) {
-  for (var rec of data) {
+  for (let rec of data) {
     rec.display_name = getDisplayName(rec);
     rec.display_addr = getDisplayAddress(rec);
     rec.display_pct = "";
@@ -14,43 +14,83 @@ function buildContactsCollection(data) {
     rec.house = "";
     rec.congress = "";
     if (rec.precinct_id) {
-      let pct = db.pcts({id: rec.precinct_id}).first();
+      let pct = DB.pcts({id: rec.precinct_id}).first();
       rec.display_pct = pct.display;
       rec.senate = pct.state_senate;
       rec.house = pct.state_house;
       rec.congress = pct.congress;
     }
   }
-  db.contacts = TAFFY(data);
+  DB.contacts = TAFFY(data);
 }
 
 /*======================================================================
 Precincts Collection
 ======================================================================*/
 function buildPrecinctsCollection() {
-  for (var rec of PCT_REX) {
+  let json_str = null;
+  if (isNotModified("precincts")) {
+    json_str = localStorage.getItem("bluestreets_precincts");
+  }
+
+  // Either table has been changed or did not exist in localStorage
+  if (json_str === null) {
+
+    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+    let url = Flask.url_for("trf.get_precincts");
+    json_str = ajaxDao.get(url);
+    if (json_str === null) {
+      throw "Unable to load precincts from server!"
+    }
+    localStorage.setItem("bluestreets_precincts", json_str);
+  }
+
+  let json_rex = JSON.parse(json_str);
+  for (let rec of json_rex) {
     rec["display"] = rec["jurisdiction_name"] + ", " +
         rec["ward"] + "/" + rec["precinct"];
   }
-  db.pcts = TAFFY(PCT_REX);
+  DB.pcts = TAFFY(json_rex);
 }
 
 /*======================================================================
 Streets Collection
 ======================================================================*/
 function buildStreetsCollection() {
-  for (var rec of STREET_REX) {
+  let json_str = null;
+  if (isNotModified("streets")) {
+    json_str = localStorage.getItem("bluestreets_streets");
+  }
+
+  if (json_str == null) {
+    // Either table has been changed or did not exist in localStorage
+
+    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+    let url = Flask.url_for("trf.get_streets");
+    json_str = ajaxDao.get(url);
+    if (json_str === null) {
+      throw "Unable to load streets from server!"
+    }
+    localStorage.setItem("bluestreets_streets", json_str);
+  }
+
+  let json_rex = JSON.parse(json_str);
+  for (let rec of json_rex) {
     rec["display"] = getDisplayAddress(rec);
   }
-  db.streets = TAFFY(STREET_REX);
+  DB.streets = TAFFY(json_rex);
+  if (DB.pcts !== undefined) {
+    DB.pcts().each(pct => DB.streets({precinct_id: pct.id}).
+        update({display_pct: pct.display}));
+  }
 }
 
 /*======================================================================
 City and Zipcode Collections
 ======================================================================*/
 function buildCityZips() {
-  db.zipcodes = db.streets().distinct("zipcode").sort();
-  db.cities = db.streets().distinct("city").sort();
+  DB.zipcodes = DB.streets().distinct("zipcode").sort();
+  DB.cities = DB.streets().distinct("city").sort();
 }
 
 function addDisplay2Dups() {
@@ -58,7 +98,7 @@ function addDisplay2Dups() {
     Object.values(dup).forEach(function(d) {
       d['display_name'] = getDisplayName(d);
       d['display_addr'] = getDisplayAddress(d);
-      d['display_pct'] = db.pcts({id: d['precinct_id']}).first().display;
+      d['display_pct'] = DB.pcts({id: d['precinct_id']}).first().display;
     })
   });
 }
@@ -67,10 +107,10 @@ function addDisplay2Dups() {
 Groups and Memberships Collections
 ======================================================================*/
 function buildGroupsCollections() {
-  db.groups = TAFFY(GROUP_REX);
-  db.memberships = TAFFY(MEMBERSHIP_REX);
+  DB.groups = TAFFY(GROUP_REX);
+  DB.memberships = TAFFY(MEMBERSHIP_REX);
 
-  db.groups().each(function (group) {
-    db.memberships({group_id: group.id}).update({group_name: group.name});
+  DB.groups().each(function (group) {
+    DB.memberships({group_id: group.id}).update({group_name: group.name});
   });
 }

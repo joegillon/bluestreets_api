@@ -82,7 +82,7 @@ var conGridCtlr = {
 
   init: function() {
     this.grid = $$("conGrid");
-    this.recordSet = db.contacts().order("display_name").get();
+    this.recordSet = DB.contacts().order("display_name").get();
     this.load(this.recordSet);
     this.grid.adjust();
   },
