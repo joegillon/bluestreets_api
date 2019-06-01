@@ -353,7 +353,12 @@ var conDupsPanelCtlr = {
   deletes: [],
 
   init: function() {
-    this.buildDB();
+    try {
+      this.buildDB();
+    } catch (ex) {
+      webix.message({type: "error", text: ex})
+      return;
+    }
     this.setEditors();
 
     webix.ui(conNameFormPopup);

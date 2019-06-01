@@ -8,11 +8,8 @@
   {{ super() }}
   <script>
     const dups = {{ dups|tojson }};
-    const STREET_REX = {{ streets|tojson }};
-    const PCT_REX = {{ precincts|tojson }};
   </script>
   <script src="{{ url_for('static', filename='js/helpers.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/ajax_dao.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/condb.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/dups_panel.js') }}"></script>
   <script src="{{ url_for('static', filename='js/contacts/match_panel.js') }}"></script>

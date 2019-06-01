@@ -13,8 +13,6 @@ con = Blueprint('con', __name__, url_prefix='/con')
 @con.route('/grid', methods=['GET'])
 def grid():
     if request.method == 'GET':
-        # rex = Precinct.get_all()
-        # pcts = [rec.serialize() for rec in rex]
 
         rex = Modification.get();
         mods = [rec.serialize() for rec in rex]
@@ -28,17 +26,12 @@ def grid():
         rex = Membership.get_all()
         memberships = [rec.serialize() for rec in rex]
 
-        # rex = Street.query.all()
-        # streets = [rec.serialize() for rec in rex]
-
         return render_template(
             'contacts/mgt.html',
             contacts=contacts,
             groups=groups,
             members=memberships,
-            # streets=streets,
             modifications=mods,
-            # precincts=pcts,
             title='Contacts'
         )
 
@@ -113,17 +106,13 @@ def duplicates():
         if not dups:
             return jsonify(msg='No duplicates!')
 
-        rex = Street.get_all()
-        streets = [rec.serialize() for rec in rex]
-
-        rex = Precinct.get_all()
-        pcts = [rec.serialize() for rec in rex]
+        rex = Modification.get();
+        mods = [rec.serialize() for rec in rex]
 
         return render_template(
             'contacts/dups.html',
             dups=dups,
-            streets=streets,
-            precincts=pcts,
+            modifications=mods,
             title='Duplicates'
         )
 
@@ -157,17 +146,13 @@ def precincts():
             return jsonify(msg='No contacts without precinct!')
         contacts = [rec.serialize() for rec in rex]
 
-        rex = Precinct.get_all()
-        pcts = [rec.serialize() for rec in rex]
-
-        rex = Street.get_all()
-        streets = [rec.serialize() for rec in rex]
+        rex = Modification.get();
+        mods = [rec.serialize() for rec in rex]
 
         return render_template(
             'contacts/pcts.html',
             contacts=contacts,
-            streets=streets,
-            precincts=pcts,
+            modifications=mods,
             title='Assign Precincts'
         )
 

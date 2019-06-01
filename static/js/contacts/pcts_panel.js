@@ -34,7 +34,12 @@ const conPctPanel = {
 
 const conPctPanelCtlr = {
   init: function() {
-    this.buildDB();
+    try {
+      this.buildDB();
+    } catch (ex) {
+      webix.message({type: "error", text: ex})
+      return;
+    }
     this.buildConFormCtlr();
 
     webix.ui(coaPopup);
