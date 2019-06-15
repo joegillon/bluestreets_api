@@ -1,0 +1,26 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+  <div id="content_container"></div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+
+  <script src="{{ url_for('static', filename='js/contacts/condb.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/groups/list_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/groups/details_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/groups/mem_list_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/groups/mem_details_panel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/groups/mgt_panel.js') }}"></script>
+
+  <script type="text/javascript" charset="utf-8">
+
+    const GROUP_REX = {{ groups|tojson }};
+
+    webix.ready(function() {
+      grpMgtPanelCtlr.init();
+    });
+
+  </script>
+{% endblock %}

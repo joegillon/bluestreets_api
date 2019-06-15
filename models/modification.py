@@ -8,8 +8,12 @@ class Modification(db.Model):
     changed_at = db.Column(db.DateTime)
 
     @staticmethod
-    def get():
-        return Modification.query.all()
+    def get_all(serialized=False):
+        rex = Modification.query.all()
+        if serialized:
+            return [rec.serialize() for rec in rex]
+        else:
+            return rex
 
     def attrs(self):
         return list(filter(lambda x: x[0] != '_', vars(self)))

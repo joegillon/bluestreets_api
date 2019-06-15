@@ -108,9 +108,4 @@ Groups and Memberships Collections
 ======================================================================*/
 function buildGroupsCollections() {
   DB.groups = TAFFY(GROUP_REX);
-  DB.memberships = TAFFY(MEMBERSHIP_REX);
-
-  DB.groups().each(function (group) {
-    DB.memberships({group_id: group.id}).update({group_name: group.name});
-  });
 }

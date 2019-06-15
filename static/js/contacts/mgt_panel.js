@@ -204,7 +204,7 @@ var conMgtPanelCtlr = {
     try {
       this.buildDB();
     } catch (ex) {
-      webix.message({type: "error", text: ex})
+      webix.message({type: "error", text: ex});
       return;
     }
     this.buildUI();

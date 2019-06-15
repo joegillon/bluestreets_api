@@ -56,7 +56,9 @@ def configure_app(app):
     print(app.config['SQLALCHEMY_DATABASE_URI'])
     # app.config.from_pyfile('config.cfg', silent=True)
 
-    # app_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    app_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    app.config['DB_PATH'] = '%s/data/26161.db' % (app_path,)
+
     # handler = logging.FileHandler('%s/bluestreets.log' % (app_path,))
     # handler.setLevel(app.config['LOGGING_LEVEL'])
     # handler.setFormatter(logging.Formatter(app.config['LOGGING_FORMAT']))

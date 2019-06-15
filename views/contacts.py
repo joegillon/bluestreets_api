@@ -14,7 +14,7 @@ con = Blueprint('con', __name__, url_prefix='/con')
 def grid():
     if request.method == 'GET':
 
-        rex = Modification.get();
+        rex = Modification.get()
         mods = [rec.serialize() for rec in rex]
 
         rex = Contact.get_all()
@@ -53,8 +53,12 @@ def csv_import():
     from config.extensions import db
 
     if request.method == 'GET':
+        rex = Modification.get();
+        mods = [rec.serialize() for rec in rex]
+
         return render_template(
             'contacts/csv_import.html',
+            modifications=mods,
             title='Contact Import'
         )
 
@@ -146,7 +150,7 @@ def precincts():
             return jsonify(msg='No contacts without precinct!')
         contacts = [rec.serialize() for rec in rex]
 
-        rex = Modification.get();
+        rex = Modification.get()
         mods = [rec.serialize() for rec in rex]
 
         return render_template(
