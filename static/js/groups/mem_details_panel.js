@@ -16,8 +16,9 @@ var memFormToolbar = {
       "id": "saveMemberBtn",
       type: "icon",
       icon: "database",
+      label: "Save",
       tooltip: "Save Membership",
-      width: 25
+      autowidth: true
     }
   ]
 };
@@ -31,56 +32,8 @@ var memFormToolbarCtlr = {
 
   setLabel: function(name) {
     $$("memFormToolbarLbl").setValue(name);
-  },
-
-  drop: function() {
-    var item = memListCtlr.getSelectedItem();
-    if (item === undefined) return;
-
-    webix.confirm(
-      "Are you sure you want to drop this membership?",
-      "confirm-warning",
-      function(yes) {
-        if (yes) {
-          var mem_id = item.id;
-          var url = Flask.url_for("mem.drop", {mem_id: mem_id});
-          ajaxDao.get(url, function(data) {
-            memListCtlr.drop(mem_id);
-            memFormCtlr.clear();
-            webix.message("Membership Dropped!");
-          })
-        }
-      }
-    );
-
-  },
-
-  save: function() {
-    var vals = memFormCtlr.getValues();
-    vals.contact_id = memPopupCtlr.contact_id;
-
-    // The select's value is a string - happened at
-    // loadMembership setValue
-    vals.group_id = parseInt(vals.group_id);
-
-    vals.id = memListCtlr.getMembershipId(vals.group_id);
-
-    var url = Flask.url_for("mem.save");
-    ajaxDao.post(url, vals, function(data) {
-      if (vals.id === null) {
-        vals.id = data["mem_id"];
-        memListCtlr.add(vals);
-        webix.message("Membership Added!");
-      } else {
-        memListCtlr.update(vals);
-        webix.message("Membership Updated!");
-      }
-    });
   }
 
-  //quit: function() {
-  //  memPopupCtlr.hide();
-  //}
 };
 
 /*=====================================================================
@@ -97,7 +50,7 @@ var memForm = {
         {
           view: "combo",
           label: "Contacts",
-          name: "contact_name",
+          name: "name",
           width: 200
         },
         {
@@ -139,23 +92,13 @@ var memFormCtlr = {
 
   clear: function() {
     this.form.clear();
-    //this.loadGroups();
   },
 
   enableContactSelect: function(on) {
-    if (on)
-      this.form.elements.contact_name.enable();
-    else
-      this.form.elements.contact_name.disable();
-  },
-
-  loadGroups: function() {
-//     var groups = groupsCollection.find({}, {$orderBy: {name: 1}});
-//     var options = groups.map(function(group) {
-//       return {id: group.id, value: group.name}
-//     });
-//     this.form.elements["group_id"].define("options", options);
-//     this.form.elements["group_id"].refresh();
+     if (on)
+       this.form.elements.name.enable();
+     else
+       this.form.elements.name.disable();
   },
 
   loadMembership: function() {
@@ -166,7 +109,11 @@ var memFormCtlr = {
   },
 
   getValues: function() {
-    return this.form.getValues();
+    let vals = this.form.getValues();
+    vals.group_id = grpListPanelCtlr.getSelectedGroupId();
+    if (vals.contact_id == "") vals.contact_id = vals.name;
+    delete vals.name;
+    return vals;
   }
 };
 /*=====================================================================
@@ -190,8 +137,9 @@ var memDetailsPanelCtlr = {
   },
 
   loadContacts: function(contacts) {
-    this.form.elements.contact_name.define("suggest", contacts);
-    this.form.elements.contact_name.refresh();
+    let suggestions = contacts.map(c => ({id: c.id, value: c.name}));
+    this.form.elements.name.define("suggest", suggestions);
+    this.form.elements.name.refresh();
     memFormCtlr.enableContactSelect(true);
   }
 };

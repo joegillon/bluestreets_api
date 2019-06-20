@@ -15,3 +15,7 @@ class StrLib(object):
     @staticmethod
     def is_even_num(num):
         return (int(num) % 2) == 0
+
+    @staticmethod
+    def common_name(d):
+        return '%s, %s' % (d['last_name'], (d['nickname'] if d['nickname'] else d['first_name']))

@@ -92,10 +92,10 @@ let memListCtlr = {
     this.clear();
     let data = DB.groups({
       id: grpListPanelCtlr.getSelectedGroupId()
-    }).first().members;
+    }).first()["members"];
     if (typeof data === "undefined") return;
     this.list.parse(data);
-    this.list.sort("name")
+    this.list.sort("contact_name")
   }
 
 };

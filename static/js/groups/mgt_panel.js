@@ -38,7 +38,6 @@ let memViewPanelCtlr = {
     this.panel = $$("memViewPanel");
     memListPanelCtlr.init();
     memDetailsPanelCtlr.init();
-    //$$("memForm").bind($$("memList"));
   }
 };
 
@@ -88,7 +87,7 @@ let grpMgtPanelCtlr = {
 
     $$("grpList").attachEvent("onAfterSelect", function(id) {
       memListCtlr.load(id);
-      let group = DB.groups({id: id}).first();
+      let group = DB.groups({id: parseInt(id)}).first();
       memFormToolbarCtlr.setLabel(group.name);
       memFormCtlr.enableContactSelect(false);
       memFormCtlr.clear();
@@ -98,6 +97,8 @@ let grpMgtPanelCtlr = {
       webix.confirm("Are you sure you want to drop this group?", "confirm-warning", function(yes) {
         if (yes) {
           let grp_id = grpListPanelCtlr.getSelectedGroupId();
+
+          //noinspection JSUnresolvedVariable,JSUnresolvedFunction
           let url = Flask.url_for("grp.drop", {grp_id: grp_id});
 
           ajaxDao.get(url, function(data) {
@@ -152,12 +153,13 @@ let grpMgtPanelCtlr = {
     $$("memList").attachEvent("onSelectChange", function() {
       memFormCtlr.enableContactSelect(false);
       let membership = $$("memList").getSelectedItem();
-      $$("memForm").elements.contact_name.setValue(membership.contact_name);
-      $$("memForm").elements.role.setValue(membership.role);
-      $$("memForm").elements.comment.setValue(membership.comment);
-      $$("memForm").elements.id.setValue(membership.id);
-      $$("memForm").elements.group_id.setValue(membership.group_id);
-      $$("memForm").elements.contact_id.setValue(membership.contact_id);
+      let frmElems = $$("memForm").elements;
+      frmElems.name.setValue(membership["contact_name"]);
+      frmElems.role.setValue(membership["role"]);
+      frmElems.comment.setValue(membership["comment"]);
+      frmElems.id.setValue(membership.id);
+      frmElems.group_id.setValue(membership.group_id);
+      frmElems.contact_id.setValue(membership.contact_id);
     });
 
     $$("dropMemberBtn").attachEvent("onItemClick", function(id) {
@@ -166,10 +168,12 @@ let grpMgtPanelCtlr = {
           let mem_id = parseInt($$("memList").getSelectedId());
 
           //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-          let url = Flask.url_for("mem.drop", {mem_id: mem_id});
+          let url = Flask.url_for("grp.drop_member", {mem_id: mem_id});
 
           ajaxDao.get(url, function(data) {
-            dropMembership(mem_id);
+            let grp = DB.groups({id: grpListPanelCtlr.getSelectedGroupId()}).first();
+            grp.members = grp.members.filter(m => m.id != mem_id);
+
             memListCtlr.load(data["groups"]);
             memFormCtlr.clear();
             webix.message("Membership dropped!");
@@ -199,8 +203,8 @@ let grpMgtPanelCtlr = {
   },
 
   buildDB: function() {
-    //buildContactsCollection();
-    buildGroupsCollections();
+    DB.groups = TAFFY(GROUP_REX);
+    DB.contact_names = TAFFY(CONTACT_REX);
   },
 
   buildUI: function() {
@@ -208,14 +212,18 @@ let grpMgtPanelCtlr = {
   },
 
   addMembership: function(values) {
-    values.contact_id = values.contact_name;
-    delete values.contact_name;
-    values.group_id = grpListPanelCtlr.getSelectedGroupId();
 
-    var url = Flask.url_for("mem.add");
+    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+    var url = Flask.url_for("grp.add_member");
     ajaxDao.post(url, values, function(data) {
       values.id = data.mem_id;
-      addMembership(values);
+      DB.groups({id: values.group_id}).first().members.push(
+        {
+          contact_id: values.contact_id,
+          contact_name: DB.contact_names({id: values.contact_id}).first().name,
+          comment: values.comment
+        }
+      );
       grpMgtPanelCtlr.reloadMembership(values);
       memListCtlr.load(values.group_id);
       webix.message("Member added!");
@@ -224,10 +232,13 @@ let grpMgtPanelCtlr = {
   },
 
   updateMembership: function(values) {
-    var url = Flask.url_for("mem.update");
+    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+    var url = Flask.url_for("grp.update_member");
 
     ajaxDao.post(url, values, function(data) {
-      updateMembership(values);
+      let membership = DB.groups({id: values.group_id}).first().members.filter(m => m.id == values.id)[0];
+      membership.comment = values.comment;
+      membership.role = values.role;
       grpMgtPanelCtlr.reloadMembership(values);
       webix.message("Member updated!");
     });
@@ -235,7 +246,6 @@ let grpMgtPanelCtlr = {
 
   reloadMembership: function(values) {
     memListCtlr.load(values.group_id);
-//     $$("memList").select(values.id);
   }
 
 };

@@ -102,10 +102,3 @@ function addDisplay2Dups() {
     })
   });
 }
-
-/*======================================================================
-Groups and Memberships Collections
-======================================================================*/
-function buildGroupsCollections() {
-  DB.groups = TAFFY(GROUP_REX);
-}
