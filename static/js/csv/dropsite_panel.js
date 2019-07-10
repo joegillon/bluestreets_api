@@ -10,14 +10,7 @@ var csvDropsite = {
   id: "csvDropsite",
   placeholder: "Drop spreadsheet here",
   labelAlign: "top",
-  height: 200,
-  on: {
-    onTimedKeyPress: function() {
-      var txt = this.getValue();
-      if (txt)
-        csvDropsiteCtlr.processData(txt);
-    }
-  }
+  height: 200
 };
 
 /*=====================================================================
@@ -33,11 +26,6 @@ var csvDropsiteCtlr = {
   clear: function () {
     this.dropsite.setValue("");
     csvGridPanelCtlr.clear();
-  },
-
-  processData: function(data) {
-    csvImportPanelCtlr.theDelimiter = "\t";
-    csvImportPanelCtlr.setData(data);
   }
 };
 

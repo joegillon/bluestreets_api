@@ -207,11 +207,8 @@ var conMgtPanelCtlr = {
       webix.message({type: "error", text: ex});
       return;
     }
-    this.buildUI();
 
-    conGridPanelCtlr.init();
-    conDetailPanelCtlr.init();
-    memPopupCtlr.init();
+    this.buildUI();
 
     // Need this because form onblur events occur prior to the clear
     // button click.
@@ -229,7 +226,6 @@ var conMgtPanelCtlr = {
     buildStreetsCollection();
     buildCityZips();
     buildContactsCollection(CONTACT_REX);
-    buildGroupsCollections();
   },
 
   buildUI: function() {
@@ -280,6 +276,11 @@ var conMgtPanelCtlr = {
     webix.ui(coaPopup);
     webix.ui(memPopup);
     webix.ui(conMgtUI);
+
+    conGridPanelCtlr.init();
+    conDetailPanelCtlr.init();
+    memPopupCtlr.init();
+
   },
 
   buildConGridCtlr: function() {

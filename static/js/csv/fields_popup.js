@@ -117,9 +117,10 @@ var csvFldsPropSheetCtlr = {
 
   init: function() {
     this.sheet = $$("csvFldsPropSheet");
-    if (isContacts) {
-      this.sheet.define("elements", contactElements);
-    }
+//     if (isContacts) {
+//       this.sheet.define("elements", contactElements);
+//     }
+    this.sheet.define("elements", contactElements);
   },
 
   clear: function() {
@@ -161,7 +162,10 @@ var csvFldsPropSheetCtlr = {
         values["phone2"] = csvFld; // If voter flds nothing happens
       }
       else if (/^group/.test(csvFld.toLowerCase())) {
-        values["groups"] = csvFld;
+        if (values.hasOwnProperty("groups"))
+          values["groups"] += ", " + csvFld;
+        else
+          values["groups"] = csvFld;
       }
       else if (/^jurisdiction/.test(csvFld.toLowerCase())) {
         values["jurisdiction"] = csvFld;
@@ -184,15 +188,23 @@ var csvFldsPropSheetCtlr = {
   },
 
   save: function() {
-    var mapping = {};
-    var props = this.sheet.getValues();
-    for (var p in props) {
+    let mapping = {};
+    let props = this.sheet.getValues();
+    for (let p in props) {
       if (props[p]) {
-        mapping[p] = "data" + this.csvFlds.indexOf(props[p]).toString();
+        if (props[p].indexOf(",") == -1)
+          mapping[p] = "data" + this.csvFlds.indexOf(props[p]).toString();
+        else {
+          mapping[p] = "";
+          let propList = props[p].split(",");
+          for (let i in propList) {
+            if (mapping[p] != "") mapping[p] += ",";
+            mapping[p] += "data" + this.csvFlds.indexOf(propList[i].trim()).toString();
+          }
+        }
       }
     }
-    csvImportPanelCtlr.loadData(mapping);
-    csvFldsPopupCtlr.hide();
+    csvFldsPopupCtlr.hide(mapping);
   }
 
 };
@@ -256,19 +268,22 @@ CSV Fields Popup Controller
 =====================================================================*/
 var csvFldsPopupCtlr = {
   popup: null,
+  callback: null,
 
   init: function() {
     this.popup = $$("csvFldsPopup");
-    this.popup.hide();
+    this.hide();
     csvFldsPanelCtlr.init();
   },
 
-  show: function(csvFlds) {
-    csvFldsPropSheetCtlr.load(csvFlds);
+  show: function(callback) {
+    this.callback = callback;
+    csvFldsPropSheetCtlr.load(csvImportPanelCtlr.csvFlds);
     this.popup.show();
   },
 
-  hide: function() {
+  hide: function(mapping) {
+    if (mapping) this.callback(mapping);
     this.popup.hide();
   }
 };

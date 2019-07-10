@@ -342,3 +342,19 @@ function isNotModified(tablename) {
   return DB.myMods({table_name: tablename}).first()["changed_at"] ==
          DB.svrMods({table_name: tablename}).first()["changed_at"];
 }
+
+const toTitleCase = (phrase) => {
+  return phrase
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+     .join(' ')
+ };
+
+const sortByProp = (objArray, prop) => {
+  objArray.sort((a, b) => {
+    let valA = a[prop].toUpperCase();
+    let valB = b[prop].toUpperCase();
+    return (valA < valB) ? -1 : (valA > valB) ? 1 : 0;
+  });
+};

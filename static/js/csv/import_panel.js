@@ -5,13 +5,13 @@
 /*=====================================================================
 Has Column Names Confirm Box
 =====================================================================*/
-var hasColnamesConfirm = {
+const hasColnamesConfirm = {
   title: "Column Names",
   ok: "Yes",
   cancel: "No",
   text: "First line has column names",
   callback: function(reply) {
-    csvImportPanelCtlr.mapFldsPopup(reply);
+    csvImportPanelCtlr.mapFields(reply);
   }
 };
 
@@ -27,44 +27,125 @@ CSV Import Panel Controller
 =====================================================================*/
 var csvImportPanelCtlr = {
   alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-  theData: null,
-  theDelimiter: ",",
-  hasColumns: false,
+  lines: null,
+  delimiter: "\t",
+  mapping: null,
+  csvFlds: null,
+  csvJurisdictions: [],
 
   init: function() {
-    csvDropsitePanelCtlr.init();
+    try {
+      this.buildDB();
+    } catch (ex) {
+      webix.message({type: "error", text: ex});
+      return;
+    }
+
+    this.buildUI();
+
+    $$("csvDropsite").attachEvent("onTimedKeyPress", function() {
+      let data = $$("csvDropsite").getValue();
+      if (data) {
+        csvImportPanelCtlr.importData(data);
+      }
+    })
+  },
+
+  buildDB: function() {
+    DB.groups = TAFFY(GROUP_REX);
+    DB.jurisdictions = TAFFY(JURISDICTION_REX);
+  },
+
+  buildUI: function() {
+    webix.ui(csvFldsPopup);
+    webix.ui(grpMapperPopup);
+
+    webix.ui({
+      container: "content_container",
+      type: "space",
+      rows: [csvImportPanel]
+    });
+
+    csvFldsPopupCtlr.init();
+    grpMapperPopupCtlr.init();
+    csvDropsiteCtlr.init();
     csvGridPanelCtlr.init();
   },
 
-  setData: function(data) {
-    this.theData = data.split("\n");
+  importData: function(data) {
+    this.lines = data.split("\n");
     webix.confirm(hasColnamesConfirm);
   },
 
-  mapFldsPopup: function(hasColumnNames) {
-    this.hasColumns = hasColumnNames;
-    var csvFlds = this.theData[0].split(this.theDelimiter);
-    if (!hasColumnNames) {
-      var cols = [];
-      for (var i=0; i<csvFlds.length; i++) {
-        cols.push(this.alphabet[i]);
-      }
-      csvFlds = cols;
+  mapFields: function(hasColnames) {
+    let csvFlds = this.lines[0].split(this.delimiter);
+
+    if (hasColnames) {
+      this.lines.shift();
     } else {
-      this.theData = this.theData.splice(1).join("\n").split("\n");
+      let numFlds = csvFlds.length;
+      csvFlds = [];
+      for (let i = 0; i < numFlds; i++) {
+        csvFlds.push(this.alphabet[i]);
+      }
     }
-    csvFldsPopupCtlr.show(csvFlds);
+
+    this.csvFlds = csvFlds;
+    csvFldsPopupCtlr.show(this.cleanData);
   },
 
-  loadData: function(mapping) {
-    var last_name_idx = parseInt(mapping.last_name.match(/\d+/)[0]);
-    var first_name_idx = parseInt(mapping.first_name.match(/\d+/)[0]);
-    var namedData = [];
-    this.theData.forEach(function(line) {
-      var flds = line.split("\t");
+  cleanData: function(mapping) {
+    csvImportPanelCtlr.mapping = mapping;
+
+    let last_name_idx = parseInt(mapping.last_name.match(/\d+/)[0]);
+    let first_name_idx = parseInt(mapping.first_name.match(/\d+/)[0]);
+    let linesWithNames = [];
+
+    let csvGroups = [];
+    let grpIndexes = (mapping.groups != "") ?
+      mapping.groups.split(",").map(x => parseInt(x.match(/\d+/g))) : -1;
+
+    let jurisIdx = (mapping.jurisdiction != "") ?
+      parseInt(mapping.jurisdiction.match(/\d+/)[0]) : -1;
+
+    for (let line of csvImportPanelCtlr.lines) {
+      if (line == "") continue;
+      let flds = line.split(csvImportPanelCtlr.delimiter);
+
+      if (mapping.groups != "") {
+        for (let gidx of grpIndexes) {
+          let grpName = toTitleCase(flds[gidx]);
+          if (grpName != "" && csvGroups.indexOf(grpName) == -1) 
+            csvGroups.push(grpName);
+        }
+      }
+
+      if (mapping.jurisdiction != "") {
+        let jurisName = toTitleCase(flds[jurisIdx]);
+        if (csvImportPanelCtlr.csvJurisdictions.indexOf(jurisName) == -1)
+          csvImportPanelCtlr.csvJurisdictions.push(jurisName);
+      }
+
       if (flds[last_name_idx] != "" && flds[first_name_idx] != "")
-        namedData.push(line);
-    });
-    csvGridCtlr.load(namedData.join("\n"), mapping, this.theDelimiter);
+        linesWithNames.push(line);
+    }
+
+    csvImportPanelCtlr.lines = linesWithNames;
+
+    let callback = (csvImportPanelCtlr.csvJurisdictions.length > 0) ?
+      csvImportPanelCtlr.mapJurisdictions : csvImportPanelCtlr.loadData;
+
+    if (csvGroups.length > 0)
+      grpMapperPopupCtlr.show(Object.values(csvGroups), callback);
+  },
+
+  mapJurisdictions: function() {
+    if (csvImportPanelCtlr.csvJurisdictions.length > 0) {
+      jurisMapperPopupCtlr.show(Object.values(csvImportPanelCtlr.csvJurisdictions, csvImportPanelCtlr.loadData));
+    }
+  },
+
+  loadData: function() {
+    csvGridCtlr.load(csvImportPanelCtlr.lines.join("\n"), csvImportPanelCtlr.mapping, csvImportPanelCtlr.delimiter);
   }
 };

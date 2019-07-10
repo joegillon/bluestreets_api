@@ -7,6 +7,10 @@ from models.street import Street
 from models.precinct import Precinct
 from models.modification import Modification
 
+from dal.dao import Dao
+import dal.groups_dao as groups_dao
+import dal.mods_dao as mods_dao
+
 con = Blueprint('con', __name__, url_prefix='/con')
 
 
@@ -51,14 +55,21 @@ def drop():
 @con.route('/import', methods=['GET', 'POST'])
 def csv_import():
     from config.extensions import db
+    import dal.jurisdiction_dao as juris_dao
 
     if request.method == 'GET':
-        rex = Modification.get();
-        mods = [rec.serialize() for rec in rex]
+
+        dao = Dao(stateful=True)
+        mods = mods_dao.get_all(dao)
+        grps = groups_dao.get_all(dao, with_members=False)
+        jurisdictions = juris_dao.get_all(dao)
+        dao.close()
 
         return render_template(
             'contacts/csv_import.html',
             modifications=mods,
+            groups=grps,
+            jurisdictions=jurisdictions,
             title='Contact Import'
         )
 

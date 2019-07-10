@@ -46,7 +46,7 @@ let grpDetailsForm = {
       name: "code",
       width: 300,
       required: true,
-      invalidMessage: "Code name is required!",
+      invalidMessage: "Code code is required!",
       on: {
         onTimedKeyPress: function() {
           this.setValue(this.getValue().toUpperCase());
