@@ -3,105 +3,13 @@
  */
 
 /*=====================================================================
-CSV Columns
-=====================================================================*/
-const csvVoterColumns = [
-  {
-    id: "last_name",
-    map: "#data0#",
-    header: "Last Name",
-    adjust: "data"
-  },
-  {
-    id: "first_name",
-    map: "#data1#",
-    header: "First Name",
-    adjust: "data"
-  },
-  {
-    id: "middle_name",
-    map: "#data2#",
-    header: "Middle",
-    adjust:"data"
-  },
-  {
-    id: "name_suffix",
-    map: "#data3#",
-    header: "Suffix",
-    adjust: "header"
-  },
-  {
-    id: "address",
-    map: "#data4#",
-    header: "Address",
-    adjust: "data"
-  },
-  {
-    id: "city",
-    map: "#data5#",
-    header: "City",
-    adjust: "data"
-  },
-  {
-    id: "zipcode",
-    map: "#data6#",
-    header: "Zip",
-    adjust: "data"
-  }
-];
-
-const csvContactColumns = csvVoterColumns.concat([
-  {
-    id: "email",
-    map: "#data7#",
-    header: "Email",
-    adjust: "data"
-  },
-  {
-    id: "phone1",
-    map: "#data8#",
-    header: "Phone 1",
-    adjust: "data"
-  },
-  {
-    id: "phone2",
-    map: "#data9#",
-    header: "Phone 2",
-    adjust: "data"
-  },
-  {
-    id: "groups",
-    map: "#data10#",
-    header: "Groups",
-    adjust: "data"
-  },
-  {
-    id: "jurisdiction",
-    map: "#data11#",
-    header: "Jurisdiction",
-    adjust: "data"
-  },
-  {
-    id: "ward",
-    map: "#data12#",
-    header: "Ward",
-    adjust: "data"
-  },
-  {
-    id: "precinct",
-    map: "#data13#",
-    header: "Precinct",
-    adjust: "data"
-  }
-]);
-
-/*=====================================================================
 CSV Grid
 =====================================================================*/
 const csvGrid = {
   view: "datatable",
   id: "csvGrid",
-  autoconfig: true,
+  autoheight: true,
+  autowidth: true,
   resizeColumn: true,
   datatype: "csv"
 };
@@ -120,43 +28,24 @@ const csvGridCtlr = {
     this.grid.clearAll();
   },
 
-  load: function(data, mapping, delimiter) {
+  load: function(data, delimiter) {
     this.clear();
-    this.setMappings(mapping);
+    this.setColumns(data[0].split(delimiter));
+    data.shift();
     webix.DataDriver.csv.cell = delimiter;
     webix.DataDriver.csv.row = "\n";
-    this.grid.parse(data, "csv");
+    this.grid.parse(data.join("\n"), "csv");
   },
 
-  setMappings: function(fldMappings) {
-    let cols = {};
-    //var colSet = (isContacts) ? csvContactColumns : csvVoterColumns;
-    let colSet = csvContactColumns;
-    for (let col of colSet) {
-      cols[col.id] = col;
-    }
-
+  setColumns: function(csvCols) {
     let newCols = [];
-    if (fldMappings) {
-      for (var fld in fldMappings) {
-        let mapProp = "#" + fldMappings[fld] + "#";
-        if (fldMappings[fld].indexOf(",") != -1) {
-          let flds = fldMappings[fld].split(",");
-          mapProp = "";
-          for (let fld of flds) {
-            if (mapProp != "") mapProp += "|";
-            mapProp += fld;
-          }
-        }
-        newCols.push({
-          id: fld,
-          map: mapProp,
-          header: cols[fld].header,
-          adjust: cols[fld].adjust
-        })
-      }
-    } else {
-      newCols = colSet;
+    for (let i=0; i<csvCols.length; i++) {
+      newCols.push({
+        id: toTitleCase(csvCols[i]),
+        map: "#data" + i.toString() + "#",
+        header: toTitleCase(csvCols[i]),
+        adjust: "data"
+      })
     }
     this.grid.define("columns", newCols);
     this.grid.refreshColumns();
@@ -190,12 +79,18 @@ var csvGridToolbar = {
   cols: [
     {view: "label", label: "Spreadsheet Import"},
     {
-      view: "template",
-      template: '<input id="fileUpload" name="files[]" type="file">'
+      view: "uploader",
+      id: "ss_uploader",
+      autowidth: true,
+      value: "Click Me or Drag File to Me",
+      link: "mylist",
+      autosend: false,
+      multiple: false
     },
+    {view: "list", id: "mylist", type: "uploader", autoheight: true, borderless: true},
     {
       view: "button",
-      value: "Import",
+      value: "Save",
       click: function() {
         csvGridToolbarCtlr.import()
       }
@@ -211,16 +106,30 @@ var csvGridToolbarCtlr = {
 
   init: function() {
     this.toolbar = $$("csvGridToolbar");
-    document.getElementById("fileUpload").addEventListener(
-        "change", this.fileSelect, false);
-  },
 
-  fileSelect: function(e) {
-    var reader = new FileReader();
-    reader.readAsText(e.target.files[0]);
-    reader.onload = (function(fileData) {
-      csvImportPanelCtlr.setData(fileData.target.result);
-    })
+    $$("ss_uploader").attachEvent("onBeforeFileAdd", function(upload) {
+       if (!["xls", "csv"].includes(upload.type)) {
+         webix.message({type: "error", text: "Excel or CSV files only!"});
+         return false;
+       }
+      let file = upload.file;
+      let reader = new FileReader();
+      reader.onload = function(e) {
+        let data = e.target.result;
+        let cfb = XLS.CFB.read(data, {type: "binary"});
+        let wb = XLS.parse_xlscfb(cfb);
+        let csv_data = XLSX.utils.sheet_to_csv(wb.Sheets.Sheet1, {FS: "\t"});
+
+        csvGridPanelCtlr.importer.importData(csv_data);
+
+      };
+      reader.readAsBinaryString(file);
+    });
+
+    $$("ss_uploader").attachEvent("onFileUploadError", function(file, response) {
+      console.log(file);
+      console.log(response);
+    });
   },
 
   import: function() {
@@ -250,17 +159,13 @@ var csvGridPanel = {
 /*=====================================================================
 CSV Grid Panel Controller
 =====================================================================*/
-var csvGridPanelCtlr = {
-  init: function() {
+const csvGridPanelCtlr = {
+  importer: null,
+
+  init: function(importer) {
+    this.importer = importer;
     csvGridToolbarCtlr.init();
     csvGridCtlr.init();
-  },
-
-  load: function(data, mapping) {
-    csvGridCtlr.load(data, mapping);
-  },
-
-  clear: function() {
-    csvGridCtlr.clear();
   }
+
 };

@@ -1,18 +1,18 @@
 /**
- * Created by Joe on 11/14/2017.
+ * Created by Joe on 7/12/2019.
  */
 
 /*=====================================================================
 CSV Import Panel
 =====================================================================*/
-var csvImportPanel = {
+const csvImportPanel = {
   cols: [csvGridPanel]
 };
 
 /*=====================================================================
 CSV Import Panel Controller
 =====================================================================*/
-var csvImportPanelCtlr = {
+const csvImportPanelCtlr = {
   lines: null,
   delimiter: "\t",
 
@@ -25,13 +25,6 @@ var csvImportPanelCtlr = {
     }
 
     this.buildUI();
-
-    //$$("csvDropsite").attachEvent("onTimedKeyPress", function() {
-    //  let data = $$("csvDropsite").getValue();
-    //  if (data) {
-    //    csvImportPanelCtlr.importData(data);
-    //  }
-    //})
   },
 
   buildDB: function() {
@@ -47,8 +40,7 @@ var csvImportPanelCtlr = {
       rows: [csvImportPanel]
     });
 
-    //csvDropsiteCtlr.init();
-    csvGridPanelCtlr.init();
+    csvGridPanelCtlr.init(this);
   },
 
   importData: function(data) {
