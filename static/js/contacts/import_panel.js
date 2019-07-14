@@ -44,7 +44,9 @@ const csvImportPanelCtlr = {
   },
 
   importData: function(data) {
+    data = data.replace(/\r/g, "");
     this.lines = data.split("\n");
+    this.delimiter = (csvGridPanelCtlr.filetype == "xls") ? "\t": ",";
     let invalidFlds = this.checkValidFlds();
     if (invalidFlds != "") {
       webix.message({type: "error", text: "Invalid fields: " + invalidFlds});

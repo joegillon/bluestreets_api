@@ -114,13 +114,16 @@ var csvGridToolbarCtlr = {
        }
       let file = upload.file;
       let reader = new FileReader();
+      csvGridPanelCtlr.filetype = upload.type;
       reader.onload = function(e) {
         let data = e.target.result;
-        let cfb = XLS.CFB.read(data, {type: "binary"});
-        let wb = XLS.parse_xlscfb(cfb);
-        let csv_data = XLSX.utils.sheet_to_csv(wb.Sheets.Sheet1, {FS: "\t"});
+        if (csvGridPanelCtlr.filetype == "xls") {
+          let cfb = XLS.CFB.read(data, {type: "binary"});
+          let wb = XLS.parse_xlscfb(cfb);
+          data = XLSX.utils.sheet_to_csv(wb.Sheets.Sheet1, {FS: "\t"});
+        }
 
-        csvGridPanelCtlr.importer.importData(csv_data);
+        csvGridPanelCtlr.importer.importData(data);
 
       };
       reader.readAsBinaryString(file);
@@ -161,6 +164,7 @@ CSV Grid Panel Controller
 =====================================================================*/
 const csvGridPanelCtlr = {
   importer: null,
+  filetype: null,
 
   init: function(importer) {
     this.importer = importer;
